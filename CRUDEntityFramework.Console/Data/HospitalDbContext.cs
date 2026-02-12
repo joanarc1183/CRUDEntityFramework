@@ -1,7 +1,7 @@
-using CRUDEntityFramework.Console.Models;
+using CRUDEntityFramework.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRUDEntityFramework.Console.Data;
+namespace CRUDEntityFramework.Data;
 
 public class HospitalDbContext : DbContext
 {
@@ -53,7 +53,7 @@ public class HospitalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        SeedData(modelBuilder);
+        // SeedData(modelBuilder);
     }
 
     private static void SeedData(ModelBuilder modelBuilder)

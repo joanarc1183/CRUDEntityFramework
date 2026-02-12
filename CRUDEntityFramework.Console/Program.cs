@@ -1,307 +1,239 @@
-using CRUDEntityFramework.ConsoleApp.Data;
-using CRUDEntityFramework.ConsoleApp.Models;
+using CRUDEntityFramework.Data;
+using CRUDEntityFramework.Models;
+using CRUDEntityFramework.Services;
 using Microsoft.EntityFrameworkCore;
 
-using var db = new HospitalDbContext();
-db.Database.EnsureCreated();
+namespace CRUDEntityFramework.Console;
 
-bool exit = false;
-
-while (!exit)
+internal class Program
 {
-    Console.Clear();
-    Console.WriteLine("=== Hospital Patient Management (EF Core) ===");
-    Console.WriteLine("1. Add Patient");
-    Console.WriteLine("2. View All Patients");
-    Console.WriteLine("3. View Patient Detail");
-    Console.WriteLine("4. Update Patient");
-    Console.WriteLine("5. Delete Patient");
-    Console.WriteLine("0. Exit");
-    Console.Write("Choose menu: ");
-
-    string? choice = Console.ReadLine();
-
-    switch (choice)
+    private static async Task Main(string[] args)
     {
-        case "1":
-            AddPatient(db);
-            break;
-        case "2":
-            ListPatients(db);
-            break;
-        case "3":
-            ViewPatientDetail(db);
-            break;
-        case "4":
-            UpdatePatient(db);
-            break;
-        case "5":
-            DeletePatient(db);
-            break;
-        case "0":
-            exit = true;
-            break;
-        default:
-            Console.WriteLine("Invalid menu.");
-            Pause();
-            break;
-    }
-}
+        using var db = new HospitalDbContext();
+        await db.Database.MigrateAsync();
 
-static void AddPatient(HospitalDbContext db)
-{
-    Console.Clear();
-    Console.WriteLine("=== Add Patient ===");
+        var patientService = new PatientService(db);
+        var medicalRecordService = new MedicalRecordService(db);
+        bool exit = false;
 
-    string mrn = ReadRequired("Medical Record Number: ");
-
-    bool exists = db.Patients.Any(p => p.MedicalRecordNumber == mrn);
-    if (exists)
-    {
-        Console.WriteLine("MRN already exists.");
-        Pause();
-        return;
-    }
-
-    string fullName = ReadRequired("Full Name: ");
-    DateOnly dob = ReadDate("Date of Birth (yyyy-MM-dd): ");
-    string gender = ReadRequired("Gender: ");
-    string address = ReadRequired("Address: ");
-    string phone = ReadRequired("Phone Number: ");
-
-    var patient = new Patient
-    {
-        MedicalRecordNumber = mrn,
-        FullName = fullName,
-        DateOfBirth = dob,
-        Gender = gender,
-        Address = address,
-        PhoneNumber = phone,
-        CreatedAt = DateTime.UtcNow
-    };
-
-    db.Patients.Add(patient);
-    db.SaveChanges();
-
-    Console.WriteLine("Patient added successfully.");
-    Pause();
-}
-
-static void ListPatients(HospitalDbContext db)
-{
-    Console.Clear();
-    Console.WriteLine("=== All Patients ===");
-
-    var patients = db.Patients
-        .AsNoTracking()
-        .OrderBy(p => p.FullName)
-        .ToList();
-
-    if (patients.Count == 0)
-    {
-        Console.WriteLine("No patient data.");
-        Pause();
-        return;
-    }
-
-    Console.WriteLine("ID | MRN | Name | DOB | Phone");
-    Console.WriteLine(new string('-', 70));
-
-    foreach (Patient patient in patients)
-    {
-        Console.WriteLine(
-            $"{patient.Id} | {patient.MedicalRecordNumber} | {patient.FullName} | {patient.DateOfBirth:yyyy-MM-dd} | {patient.PhoneNumber}");
-    }
-
-    Pause();
-}
-
-static void ViewPatientDetail(HospitalDbContext db)
-{
-    Console.Clear();
-    Console.WriteLine("=== Patient Detail ===");
-
-    int id = ReadInt("Patient ID: ");
-
-    Patient? patient = db.Patients.AsNoTracking().FirstOrDefault(p => p.Id == id);
-    if (patient is null)
-    {
-        Console.WriteLine("Patient not found.");
-        Pause();
-        return;
-    }
-
-    Console.WriteLine($"ID: {patient.Id}");
-    Console.WriteLine($"MRN: {patient.MedicalRecordNumber}");
-    Console.WriteLine($"Name: {patient.FullName}");
-    Console.WriteLine($"DOB: {patient.DateOfBirth:yyyy-MM-dd}");
-    Console.WriteLine($"Gender: {patient.Gender}");
-    Console.WriteLine($"Address: {patient.Address}");
-    Console.WriteLine($"Phone: {patient.PhoneNumber}");
-    Console.WriteLine($"Created (UTC): {patient.CreatedAt:yyyy-MM-dd HH:mm:ss}");
-
-    Pause();
-}
-
-static void UpdatePatient(HospitalDbContext db)
-{
-    Console.Clear();
-    Console.WriteLine("=== Update Patient ===");
-
-    int id = ReadInt("Patient ID: ");
-    Patient? patient = db.Patients.FirstOrDefault(p => p.Id == id);
-
-    if (patient is null)
-    {
-        Console.WriteLine("Patient not found.");
-        Pause();
-        return;
-    }
-
-    Console.WriteLine("Press Enter to keep current value.");
-
-    string? fullName = ReadOptional($"Full Name ({patient.FullName}): ");
-    string? gender = ReadOptional($"Gender ({patient.Gender}): ");
-    string? address = ReadOptional($"Address ({patient.Address}): ");
-    string? phone = ReadOptional($"Phone Number ({patient.PhoneNumber}): ");
-
-    Console.Write($"Date of Birth ({patient.DateOfBirth:yyyy-MM-dd}) [yyyy-MM-dd]: ");
-    string? dobInput = Console.ReadLine();
-
-    if (!string.IsNullOrWhiteSpace(fullName))
-    {
-        patient.FullName = fullName.Trim();
-    }
-
-    if (!string.IsNullOrWhiteSpace(gender))
-    {
-        patient.Gender = gender.Trim();
-    }
-
-    if (!string.IsNullOrWhiteSpace(address))
-    {
-        patient.Address = address.Trim();
-    }
-
-    if (!string.IsNullOrWhiteSpace(phone))
-    {
-        patient.PhoneNumber = phone.Trim();
-    }
-
-    if (!string.IsNullOrWhiteSpace(dobInput))
-    {
-        while (!DateOnly.TryParse(dobInput, out DateOnly dob))
+        while (!exit)
         {
-            Console.Write("Invalid format. Re-enter DOB (yyyy-MM-dd): ");
-            dobInput = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(dobInput))
+            System.Console.Clear();
+            System.Console.WriteLine("=== Hospital Patient Management ===");
+            System.Console.WriteLine("1. Add Patient");
+            System.Console.WriteLine("2. See History");
+            System.Console.WriteLine("3. Update Diagnosis");
+            System.Console.WriteLine("4. Delete Record");
+            System.Console.WriteLine("0. Exit");
+            System.Console.Write("Choose menu: ");
+
+            string? choice = System.Console.ReadLine();
+
+            switch (choice)
             {
-                dob = patient.DateOfBirth;
-                break;
+                case "1":
+                    await AddPatientAsync(patientService);
+                    break;
+                case "2":
+                    await SeeHistoryAsync(patientService);
+                    break;
+                case "3":
+                    await UpdateDiagnosisAsync(medicalRecordService);
+                    break;
+                case "4":
+                    await DeleteRecordAsync(medicalRecordService);
+                    break;
+                case "0":
+                    exit = true;
+                    break;
+                default:
+                    System.Console.WriteLine("Invalid menu.");
+                    Pause();
+                    break;
+            }
+        }
+    }
+
+    private static async Task AddPatientAsync(PatientService patientService)
+    {
+        System.Console.Clear();
+        System.Console.WriteLine("=== Add Patient ===");
+
+        var patient = new Patient
+        {
+            FullName = ReadRequired("Full Name: "),
+            DateOfBirth = ReadDate("Date of Birth (yyyy-MM-dd): "),
+            Gender = ReadRequired("Gender: "),
+            Address = ReadRequired("Address: "),
+            PhoneNumber = ReadRequired("Phone Number: "),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await patientService.CreatePatient(patient);
+
+        System.Console.WriteLine("Patient added successfully.");
+        Pause();
+    }
+
+    private static async Task SeeHistoryAsync(PatientService patientService)
+    {
+        System.Console.Clear();
+        System.Console.WriteLine("=== Patient History ===");
+
+        string fullName = ReadRequired("Full Name: ");
+        List<Patient> patients = await patientService.GetPatientHistoryByFullNameAsync(fullName);
+
+        if (patients.Count == 0)
+        {
+            System.Console.WriteLine("Patient not found.");
+            Pause();
+            return;
+        }
+
+        foreach (Patient patient in patients)
+        {
+            System.Console.WriteLine();
+            System.Console.WriteLine($"ID           : {patient.Id}");
+            System.Console.WriteLine($"Full Name    : {patient.FullName}");
+            System.Console.WriteLine($"Date of Birth: {patient.DateOfBirth:yyyy-MM-dd}");
+            System.Console.WriteLine($"Gender       : {patient.Gender}");
+            System.Console.WriteLine($"Address      : {patient.Address}");
+            System.Console.WriteLine($"Phone Number : {patient.PhoneNumber}");
+
+            if (patient.MedicalRecords.Count == 0)
+            {
+                System.Console.WriteLine("Medical Records: none");
+                continue;
+            }
+
+            System.Console.WriteLine("Medical Records:");
+            foreach (MedicalRecord record in patient.MedicalRecords.OrderByDescending(m => m.VisitDate))
+            {
+                string doctorName = record.Doctor?.FullName ?? "Unknown Doctor";
+                System.Console.WriteLine($"- {record.VisitDate:yyyy-MM-dd} | {doctorName} | {record.Diagnosis}");
             }
         }
 
-        if (DateOnly.TryParse(dobInput, out DateOnly validDob))
-        {
-            patient.DateOfBirth = validDob;
-        }
-    }
-
-    db.SaveChanges();
-    Console.WriteLine("Patient updated successfully.");
-    Pause();
-}
-
-static void DeletePatient(HospitalDbContext db)
-{
-    Console.Clear();
-    Console.WriteLine("=== Delete Patient ===");
-
-    int id = ReadInt("Patient ID: ");
-    Patient? patient = db.Patients.FirstOrDefault(p => p.Id == id);
-
-    if (patient is null)
-    {
-        Console.WriteLine("Patient not found.");
         Pause();
-        return;
     }
 
-    Console.WriteLine($"Patient: {patient.FullName} ({patient.MedicalRecordNumber})");
-    Console.Write("Delete this patient? (y/n): ");
-    string? confirmation = Console.ReadLine();
-
-    if (confirmation?.Trim().ToLowerInvariant() == "y")
+    private static async Task UpdateDiagnosisAsync(MedicalRecordService medicalRecordService)
     {
-        db.Patients.Remove(patient);
-        db.SaveChanges();
-        Console.WriteLine("Patient deleted successfully.");
-    }
-    else
-    {
-        Console.WriteLine("Delete canceled.");
-    }
+        System.Console.Clear();
+        System.Console.WriteLine("=== Update Diagnosis ===");
 
-    Pause();
-}
+        string fullName = ReadRequired("Full Name: ");
+        List<MedicalRecord> records = await medicalRecordService.GetRecordsByPatientFullNameAsync(fullName);
 
-static string ReadRequired(string label)
-{
-    while (true)
-    {
-        Console.Write(label);
-        string? input = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(input))
+        if (records.Count == 0)
         {
-            return input.Trim();
+            System.Console.WriteLine("No medical record found for this patient.");
+            Pause();
+            return;
         }
 
-        Console.WriteLine("Input cannot be empty.");
-    }
-}
-
-static string? ReadOptional(string label)
-{
-    Console.Write(label);
-    return Console.ReadLine();
-}
-
-static int ReadInt(string label)
-{
-    while (true)
-    {
-        Console.Write(label);
-        string? input = Console.ReadLine();
-
-        if (int.TryParse(input, out int number) && number > 0)
+        System.Console.WriteLine("Medical Records:");
+        foreach (MedicalRecord record in records)
         {
-            return number;
+            string doctorName = record.Doctor?.FullName ?? "Unknown Doctor";
+            System.Console.WriteLine($"ID {record.Id} | {record.VisitDate:yyyy-MM-dd} | {doctorName} | {record.Diagnosis}");
         }
 
-        Console.WriteLine("Input must be a positive number.");
-    }
-}
-
-static DateOnly ReadDate(string label)
-{
-    while (true)
-    {
-        Console.Write(label);
-        string? input = Console.ReadLine();
-
-        if (DateOnly.TryParse(input, out DateOnly date))
+        int recordId = ReadPositiveInt("Choose Record ID to update: ");
+        if (!records.Any(r => r.Id == recordId))
         {
-            return date;
+            System.Console.WriteLine("Record ID is not in the list.");
+            Pause();
+            return;
         }
 
-        Console.WriteLine("Invalid date format. Example: 2001-08-17");
-    }
-}
+        string newDiagnosis = ReadRequired("New Diagnosis: ");
+        bool updated = await medicalRecordService.UpdateDiagnosisAsync(recordId, newDiagnosis);
 
-static void Pause()
-{
-    Console.WriteLine();
-    Console.Write("Press Enter to continue...");
-    Console.ReadLine();
+        System.Console.WriteLine(updated ? "Diagnosis updated successfully." : "Failed to update diagnosis.");
+        Pause();
+    }
+
+    private static async Task DeleteRecordAsync(MedicalRecordService medicalRecordService)
+    {
+        System.Console.Clear();
+        System.Console.WriteLine("=== Delete Record ===");
+
+        List<MedicalRecord> records = await medicalRecordService.GetAllRecordAsync();
+
+        if (records.Count == 0)
+        {
+            System.Console.WriteLine("No medical record found. Create a new one before deleting.");
+            Pause();
+            return;
+        }
+
+        System.Console.WriteLine("Medical Records:");
+        foreach (MedicalRecord record in records)
+        {
+            System.Console.WriteLine($"ID {record.Id} | {record.VisitDate:yyyy-MM-dd} | {record.Doctor} | {record.Diagnosis}"); 
+        }
+
+        int recordId = ReadPositiveInt("Choose Record ID to delete: ");
+        if (!records.Any(r => r.Id == recordId))
+        {
+            System.Console.WriteLine("Record ID is not in the list.");
+            Pause();
+            return;
+        }
+        
+        await medicalRecordService.DeleteRecordAsync(recordId);
+    }
+
+    private static string ReadRequired(string label)
+    {
+        while (true)
+        {
+            System.Console.Write(label);
+            string? input = System.Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(input))
+            {
+                return input.Trim();
+            }
+
+            System.Console.WriteLine("Input cannot be empty.");
+        }
+    }
+
+    private static int ReadPositiveInt(string label)
+    {
+        while (true)
+        {
+            System.Console.Write(label);
+            string? input = System.Console.ReadLine();
+            if (int.TryParse(input, out int value) && value > 0)
+            {
+                return value;
+            }
+
+            System.Console.WriteLine("Input must be a positive number.");
+        }
+    }
+
+    private static DateOnly ReadDate(string label)
+    {
+        while (true)
+        {
+            System.Console.Write(label);
+            string? input = System.Console.ReadLine();
+            if (DateOnly.TryParse(input, out DateOnly value))
+            {
+                return value;
+            }
+
+            System.Console.WriteLine("Invalid date format. Example: 2001-08-17");
+        }
+    }
+
+    private static void Pause()
+    {
+        System.Console.WriteLine();
+        System.Console.Write("Press Enter to continue...");
+        System.Console.ReadLine();
+    }
 }
