@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CRUDEntityFramework.Console.Models;
+namespace CRUDEntityFramework.Models;
 
 public class Patient
 {
