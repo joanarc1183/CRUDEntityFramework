@@ -1,90 +1,64 @@
 using AutoMapper;
-using HospitalPatientManager.Data;
 using HospitalPatientManager.DTOs;
-using HospitalPatientManager.Mappings;
 using HospitalPatientManager.Models;
-using Microsoft.EntityFrameworkCore;
+using HospitalPatientManager.Repositories;
 
 namespace HospitalPatientManager.Services;
 
 public class PatientService : IPatientService
 {
-    private readonly HospitalDbContext _context;
+    private readonly IPatientRepository _patientRepository;
+    private readonly IMedicalRecordRepository _medicalRecordRepository;
     private readonly IMapper _mapper;
 
-    public PatientService(HospitalDbContext context, IMapper mapper)
+    public PatientService(IPatientRepository patientRepository, IMedicalRecordRepository medicalRecordRepository, IMapper mapper)
     {
-        _context = context;
+        _patientRepository = patientRepository;
+        _medicalRecordRepository = medicalRecordRepository;
         _mapper = mapper;
-    }
-
-    public PatientService(HospitalDbContext context)
-    {
-        _context = context;
-        var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
-        _mapper = mapperConfig.CreateMapper();
-    }
-
-    public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord)
-    {
-        _context.MedicalRecords.Add(medicalRecord);
-        await _context.SaveChangesAsync();
-        return ServiceResult<MedicalRecord>.Ok(medicalRecord, "Medical record berhasil dibuat");
     }
 
     public async Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto)
     {
-        bool exists = await _context.Patients.AnyAsync(p =>
-            p.FullName.ToLower() == dto.FullName.Trim().ToLower() &&
-            p.PhoneNumber == dto.PhoneNumber.Trim());
-
-        if (exists)
+        Patient? existing = await _patientRepository.GetByPhoneNumberAsync(dto.PhoneNumber.Trim());
+        // Nama user bisa sama, tapi tidak dengan nomor teleponnya
+        if (existing is not null)
         {
-            return ServiceResult<PatientReadDto>.Fail("Patient sudah terdaftar");
+            return ServiceResult<PatientReadDto>.Fail("Tidak dapat menambahkan Pasien. Nomor telepon sudah terdaftar.");
         }
 
         Patient patient = _mapper.Map<Patient>(dto);
         patient.CreatedAt = DateTime.UtcNow;
 
-        _context.Patients.Add(patient);
-        await _context.SaveChangesAsync();
+        await _patientRepository.AddAsync(patient);
+        await _patientRepository.SaveChangesAsync();
 
         return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(patient), "Patient berhasil dibuat");
     }
 
-    public async Task<ServiceResult<List<PatientReadDto>>> GetPatientHistoryByFullNameDtoAsync(string fullName)
+    public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord)
     {
-        string normalizedName = fullName.Trim().ToLower();
+        await _medicalRecordRepository.AddAsync(medicalRecord);
+        await _medicalRecordRepository.SaveChangesAsync();
 
-        List<Patient> patients = await _context.Patients
-            .AsNoTracking()
-            .Where(p => p.FullName.ToLower() == normalizedName)
-            .Include(p => p.MedicalRecords)
-                .ThenInclude(m => m.Doctor)
-            .OrderBy(p => p.FullName)
-            .ToListAsync();
-
-        List<PatientReadDto> result = _mapper.Map<List<PatientReadDto>>(patients);
-        return ServiceResult<List<PatientReadDto>>.Ok(result);
-    }
-
-    public async Task<Patient> CreatePatient(Patient patient)
-    {
-        _context.Patients.Add(patient);
-        await _context.SaveChangesAsync();
-        return patient;
+        return ServiceResult<MedicalRecord>.Ok(medicalRecord, "Medical record berhasil dibuat");
     }
 
     public async Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName)
     {
-        string normalizedName = fullName.Trim().ToLower();
+        return await _patientRepository.GetPatientHistoryByFullNameAsync(fullName);
+    }
 
-        return await _context.Patients
-            .AsNoTracking()
-            .Where(p => p.FullName.ToLower() == normalizedName)
-            .Include(p => p.MedicalRecords)
-                .ThenInclude(m => m.Doctor)
-            .OrderBy(p => p.FullName)
-            .ToListAsync();
+    public async Task<ServiceResult<List<PatientReadDto>>> GetPatientHistoryByFullNameDtoAsync(string fullName)
+    {
+        List<Patient> patients = await _patientRepository.GetPatientHistoryByFullNameAsync(fullName);
+        List<PatientReadDto> result = _mapper.Map<List<PatientReadDto>>(patients);
+
+        return ServiceResult<List<PatientReadDto>>.Ok(result);
+    }
+
+    public async Task<List<Patient>> GetAllPatientsAsync()
+    {
+        return await _patientRepository.GetAllPatientsAsync();
     }
 }

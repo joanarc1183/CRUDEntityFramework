@@ -1,4 +1,4 @@
-using HospitalPatientManager.Data;
+using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Models;
 
 namespace HospitalPatientManager.Services;
@@ -6,7 +6,8 @@ namespace HospitalPatientManager.Services;
 public interface IPatientService
 {
     Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord);
-    Task<Patient> CreatePatient(Patient patient);
+    Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto);
+    Task<ServiceResult<List<PatientReadDto>>> GetPatientHistoryByFullNameDtoAsync(string fullName);
     Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName);
+    Task<List<Patient>> GetAllPatientsAsync();
 }
-

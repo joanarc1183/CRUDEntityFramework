@@ -1,66 +1,53 @@
-using HospitalPatientManager.Data;
 using HospitalPatientManager.Models;
-using Microsoft.EntityFrameworkCore;
+using HospitalPatientManager.Repositories;
 
 namespace HospitalPatientManager.Services;
 
 public class MedicalRecordService
 {
-    private readonly HospitalDbContext _context;
+    private readonly IMedicalRecordRepository _medicalRecordRepository;
 
-    public MedicalRecordService(HospitalDbContext context)
+    public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository)
     {
-        _context = context;
+        _medicalRecordRepository = medicalRecordRepository;
     }
 
     public async Task<List<MedicalRecord>> GetRecordsByPatientFullNameAsync(string fullName)
     {
-        string normalizedName = fullName.Trim().ToLower();
-
-        return await _context.MedicalRecords
-            .AsNoTracking()
-            .Include(m => m.Patient)
-            .Include(m => m.Doctor)
-            .Where(m => m.Patient != null && m.Patient.FullName.ToLower() == normalizedName)
-            .OrderByDescending(m => m.VisitDate)
-            .ToListAsync();
+        return await _medicalRecordRepository.GetRecordsByPatientFullNameAsync(fullName);
     }
 
     public async Task<bool> UpdateDiagnosisAsync(int medicalRecordId, string diagnosis)
     {
-        MedicalRecord? record = await _context.MedicalRecords.FirstOrDefaultAsync(m => m.Id == medicalRecordId);
+        MedicalRecord? record = await _medicalRecordRepository.GetByIdAsync(medicalRecordId);
         if (record is null)
         {
             return false;
         }
 
         record.Diagnosis = diagnosis.Trim();
-        await _context.SaveChangesAsync();
+        _medicalRecordRepository.Update(record);
+        await _medicalRecordRepository.SaveChangesAsync();
+
         return true;
     }
 
     public async Task<List<MedicalRecord>> GetAllRecordAsync()
     {
-        return await _context.MedicalRecords
-            .AsNoTracking()
-            .Include(m => m.Patient)
-            .Include(m => m.Doctor)
-            .OrderByDescending(m => m.VisitDate)
-            .ToListAsync();
+        return await _medicalRecordRepository.GetAllWithRelationsAsync();
     }
 
     public async Task<bool> DeleteRecordAsync(int id)
     {
-        var idDelete = await _context.MedicalRecords.FindAsync(id);
-
-        if (idDelete == null)
+        MedicalRecord? record = await _medicalRecordRepository.GetByIdAsync(id);
+        if (record is null)
+        {
             return false;
-        
-        _context.MedicalRecords.Remove(idDelete);
-        await _context.SaveChangesAsync();
+        }
+
+        _medicalRecordRepository.Delete(record);
+        await _medicalRecordRepository.SaveChangesAsync();
 
         return true;
     }
-
 }
-
