@@ -1,9 +1,9 @@
-using CRUDEntityFramework.Data;
-using CRUDEntityFramework.Models;
-using CRUDEntityFramework.Services;
+using HospitalPatientManager.Data;
+using HospitalPatientManager.Models;
+using HospitalPatientManager.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRUDEntityFramework.Console;
+namespace HospitalPatientManager.Console;
 
 internal class Program
 {
@@ -237,3 +237,4 @@ internal class Program
         System.Console.ReadLine();
     }
 }
+

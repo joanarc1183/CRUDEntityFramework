@@ -1,8 +1,8 @@
-using CRUDEntityFramework.Data;
-using CRUDEntityFramework.Models;
+using HospitalPatientManager.Data;
+using HospitalPatientManager.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRUDEntityFramework.Services;
+namespace HospitalPatientManager.Services;
 
 public class PatientService
 {
@@ -40,3 +40,4 @@ public class PatientService
             .ToListAsync();
     }
 }
+

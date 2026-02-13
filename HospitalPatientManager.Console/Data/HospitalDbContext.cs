@@ -1,7 +1,7 @@
-using CRUDEntityFramework.Models;
+using HospitalPatientManager.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRUDEntityFramework.Data;
+namespace HospitalPatientManager.Data;
 
 public class HospitalDbContext : DbContext
 {

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CRUDEntityFramework.Console.Migrations
+namespace HospitalPatientManager.Console.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -97,3 +97,4 @@ namespace CRUDEntityFramework.Console.Migrations
         }
     }
 }
+

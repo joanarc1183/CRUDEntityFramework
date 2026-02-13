@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CRUDEntityFramework.Models;
+namespace HospitalPatientManager.Models;
 
 public class MedicalRecord
 {
@@ -20,3 +20,4 @@ public class MedicalRecord
 
     public virtual Doctor? Doctor { get; set; }
 }
+
