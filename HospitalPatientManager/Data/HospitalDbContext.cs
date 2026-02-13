@@ -53,7 +53,7 @@ public class HospitalDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        SeedData(modelBuilder);
+        // SeedData(modelBuilder);
     }
 
     private static void SeedData(ModelBuilder modelBuilder)
