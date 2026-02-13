@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace HospitalPatientManager.Console.Migrations
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
+namespace HospitalPatientManager.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -72,6 +74,38 @@ namespace HospitalPatientManager.Console.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Doctors",
+                columns: new[] { "Id", "CreatedAt", "FullName", "Specialization" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 1, 10, 7, 30, 0, 0, DateTimeKind.Utc), "Dr. Maya Putri", "Internal Medicine" },
+                    { 2, new DateTime(2026, 1, 10, 7, 35, 0, 0, DateTimeKind.Utc), "Dr. Raka Wijaya", "Pediatrics" },
+                    { 3, new DateTime(2026, 1, 10, 7, 40, 0, 0, DateTimeKind.Utc), "Dr. Nanda Lestari", "Cardiology" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Patients",
+                columns: new[] { "Id", "Address", "CreatedAt", "DateOfBirth", "FullName", "Gender", "PhoneNumber" },
+                values: new object[,]
+                {
+                    { 1, "Jakarta", new DateTime(2026, 1, 10, 8, 0, 0, 0, DateTimeKind.Utc), new DateOnly(1990, 5, 12), "Budi Santoso", "Male", "081234567890" },
+                    { 2, "Bandung", new DateTime(2026, 1, 10, 8, 5, 0, 0, DateTimeKind.Utc), new DateOnly(1988, 11, 3), "Siti Rahma", "Female", "081298765432" },
+                    { 3, "Surabaya", new DateTime(2026, 1, 10, 8, 10, 0, 0, DateTimeKind.Utc), new DateOnly(2001, 2, 18), "Andi Pratama", "Male", "081322233344" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "MedicalRecords",
+                columns: new[] { "Id", "Diagnosis", "DoctorId", "PatientId", "VisitDate" },
+                values: new object[,]
+                {
+                    { 1, "Seasonal flu", 1, 1, new DateTime(2026, 1, 11, 9, 0, 0, 0, DateTimeKind.Utc) },
+                    { 2, "Hypertension", 3, 2, new DateTime(2026, 1, 12, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 3, "Mild asthma", 2, 3, new DateTime(2026, 1, 13, 11, 0, 0, 0, DateTimeKind.Utc) },
+                    { 4, "Chest pain follow-up", 3, 1, new DateTime(2026, 1, 14, 13, 0, 0, 0, DateTimeKind.Utc) },
+                    { 5, "Gastritis", 1, 2, new DateTime(2026, 1, 15, 15, 0, 0, 0, DateTimeKind.Utc) }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_MedicalRecords_DoctorId",
                 table: "MedicalRecords",
@@ -97,4 +131,3 @@ namespace HospitalPatientManager.Console.Migrations
         }
     }
 }
-
