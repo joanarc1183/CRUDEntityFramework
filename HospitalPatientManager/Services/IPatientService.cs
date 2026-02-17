@@ -5,7 +5,6 @@ namespace HospitalPatientManager.Services;
 
 public interface IPatientService
 {
-    Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord);
     Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto);
     Task<ServiceResult<PatientReadDto>> UpdatePatientAsync(PatientUpdateDto dto);
     Task<ServiceResult<List<PatientReadDto>>> GetPatientHistoryByFullNameDtoAsync(string fullName);

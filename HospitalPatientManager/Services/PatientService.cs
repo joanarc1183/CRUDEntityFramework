@@ -8,13 +8,11 @@ namespace HospitalPatientManager.Services;
 public class PatientService : IPatientService
 {
     private readonly IPatientRepository _patientRepository;
-    private readonly IMedicalRecordRepository _medicalRecordRepository;
     private readonly IMapper _mapper;
 
-    public PatientService(IPatientRepository patientRepository, IMedicalRecordRepository medicalRecordRepository, IMapper mapper)
+    public PatientService(IPatientRepository patientRepository, IMapper mapper)
     {
         _patientRepository = patientRepository;
-        _medicalRecordRepository = medicalRecordRepository;
         _mapper = mapper;
     }
 
@@ -56,14 +54,6 @@ public class PatientService : IPatientService
         await _patientRepository.SaveChangesAsync();
 
         return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(existingPatient), "Biodata patient berhasil diperbarui.");
-    }
-
-    public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord)
-    {
-        await _medicalRecordRepository.AddAsync(medicalRecord);
-        await _medicalRecordRepository.SaveChangesAsync();
-
-        return ServiceResult<MedicalRecord>.Ok(medicalRecord, "Medical record berhasil dibuat");
     }
 
     public async Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName)

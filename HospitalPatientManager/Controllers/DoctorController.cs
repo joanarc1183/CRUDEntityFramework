@@ -1,3 +1,4 @@
+using HospitalPatientManager.DTOs.MedicalRecord;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Services;
 using HospitalPatientManager.ViewModels;
@@ -150,18 +151,18 @@ public class DoctorController : Controller
             return RedirectToAction(nameof(Patients), new { userId });
         }
 
-        var medicalRecord = new MedicalRecord
+        var dto = new MedicalRecordCreateDto
         {
             DoctorId = userId,
             PatientId = patientId,
-            VisitDate = DateTime.SpecifyKind(visitDate.Date, DateTimeKind.Utc),
+            VisitDate = visitDate,
             Diagnosis = diagnosis.Trim(),
             Treatment = treatment.Trim(),
             Notes = notes.Trim(),
             Status = status
         };
 
-        var result = await _patientService.CreateMedicalRecordAsync(medicalRecord);
+        var result = await _medicalRecordService.CreateMedicalRecordAsync(dto);
         TempData[result.Success ? "FlashSuccess" : "FlashError"] = result.Message;
 
         if (string.Equals(from, "Records", StringComparison.OrdinalIgnoreCase))
@@ -210,10 +211,15 @@ public class DoctorController : Controller
             return RedirectToAction(nameof(Records), new { userId });
         }
 
-        bool updated = await _medicalRecordService.UpdateRecordDetailsAsync(recordId, diagnosis, treatment, notes, status);
-        TempData[updated ? "FlashSuccess" : "FlashError"] = updated
-            ? "Record updated successfully."
-            : "Failed to update record.";
+        var result = await _medicalRecordService.UpdateRecordDetailsAsync(new UpdateMedicalRecordDto
+        {
+            RecordId = recordId,
+            Diagnosis = diagnosis,
+            Treatment = treatment,
+            Notes = notes,
+            Status = status
+        });
+        TempData[result.Success ? "FlashSuccess" : "FlashError"] = result.Message;
 
         if (string.Equals(from, "PatientDetail", StringComparison.OrdinalIgnoreCase) && patientId is not null)
         {

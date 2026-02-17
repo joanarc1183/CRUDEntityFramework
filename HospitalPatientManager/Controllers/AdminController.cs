@@ -146,10 +146,8 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRecord(int recordId)
     {
-        bool deleted = await _medicalRecordService.DeleteRecordAsync(recordId);
-        TempData[deleted ? "FlashSuccess" : "FlashError"] = deleted
-            ? "Record deleted successfully."
-            : "Failed to delete record.";
+        var result = await _medicalRecordService.DeleteRecordAsync(recordId);
+        TempData[result.Success ? "FlashSuccess" : "FlashError"] = result.Message;
         return RedirectToAction(nameof(Records));
     }
 

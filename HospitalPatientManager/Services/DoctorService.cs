@@ -1,3 +1,4 @@
+using AutoMapper;
 using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Repositories;
@@ -8,10 +9,12 @@ namespace HospitalPatientManager.Services;
 public class DoctorService : IDoctorService
 {
     private readonly IDoctorRepository _doctorRepository;
+    private readonly IMapper _mapper;
 
-    public DoctorService(IDoctorRepository doctorRepository)
+    public DoctorService(IDoctorRepository doctorRepository, IMapper mapper)
     {
         _doctorRepository = doctorRepository;
+        _mapper = mapper;
     }
 
     public async Task<List<Doctor>> GetAllDoctorsAsync()
@@ -41,12 +44,10 @@ public class DoctorService : IDoctorService
             return ServiceResult<Doctor>.Fail("Doctor with the same name already exists.");
         }
 
-        var doctor = new Doctor
-        {
-            FullName = fullName,
-            Specialization = specialization,
-            CreatedAt = DateTime.UtcNow
-        };
+        var doctor = _mapper.Map<Doctor>(dto);
+        doctor.FullName = fullName;
+        doctor.Specialization = specialization;
+        doctor.CreatedAt = DateTime.UtcNow;
 
         await _doctorRepository.AddAsync(doctor);
         await _doctorRepository.SaveChangesAsync();
