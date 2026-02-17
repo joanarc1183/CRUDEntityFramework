@@ -1,0 +1,77 @@
+@using HospitalPatientManager.ViewModels
+@model PatientBiodataViewModel
+@{
+    ViewData["Title"] = "My Biodata";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Patient/Dashboard?userId=@Model.Patient.Id">Dashboard</a>
+            <a class="active" href="/Patient/Biodata?userId=@Model.Patient.Id">My Biodata</a>
+            <a href="/Patient/Records?userId=@Model.Patient.Id">Checkup Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.Initials</div>
+            <div><div style="font-size:14px;font-weight:600;">@Model.Patient.FullName</div><div style="font-size:12px;color:#8eabb5;">Patient</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">My Biodata</h1>
+            <p class="muted" style="margin-top:6px;">Update your personal profile information.</p>
+
+            <div class="card" style="margin-top:16px;padding:20px;">
+                <h3 style="font-size:20px;">@Model.Patient.FullName</h3>
+                <form asp-action="UpdateBiodata" asp-controller="Patient" method="post" class="grid" style="grid-template-columns:1fr;margin-top:12px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@Model.Patient.Id" />
+                    <label style="font-size:13px;">Name:
+                        <input name="FullName" value="@Model.Patient.FullName" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+                    </label>
+                    <label style="font-size:13px;">Date of Birth:
+                        <input name="DateOfBirth" type="date" value="@Model.Patient.DateOfBirth.ToString("yyyy-MM-dd")" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+                    </label>
+                    <label style="font-size:13px;">Gender:
+                        <select name="Gender" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;">
+                            @if (Model.Patient.Gender == "Female")
+                            {
+                                <option value="Male">Male</option>
+                                <option value="Female" selected>Female</option>
+                            }
+                            else
+                            {
+                                <option value="Male" selected>Male</option>
+                                <option value="Female">Female</option>
+                            }
+                        </select>
+                    </label>
+                    <label style="font-size:13px;">Phone:
+                        <input name="PhoneNumber" value="@Model.Patient.PhoneNumber" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+                    </label>
+                    <label style="font-size:13px;">Address:
+                        <input name="Address" value="@Model.Patient.Address" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+                    </label>
+                    <button class="btn btn-primary" type="submit">Save Biodata</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+</script>
+}
+

@@ -1,0 +1,184 @@
+@using HospitalPatientManager.ViewModels
+@model DoctorPatientDetailViewModel
+@{
+    ViewData["Title"] = "Patient Detail";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Doctor/Dashboard?userId=@Model.Doctor.Id">Dashboard</a>
+            <a class="active" href="/Doctor/Patients?userId=@Model.Doctor.Id">Patients</a>
+            <a href="/Doctor/Records?userId=@Model.Doctor.Id">All Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.DoctorInitials</div>
+            <div><div style="font-size:14px;font-weight:600;">@Model.Doctor.FullName</div><div style="font-size:12px;color:#8eabb5;">Doctor</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.DoctorInitials</div>
+        </header>
+        <div class="page">
+            <a href="/Doctor/Patients?userId=@Model.Doctor.Id" class="btn" style="margin-bottom:14px;">← Back to Patients</a>
+            <h1 style="font-size:28px;">@Model.Patient.FullName</h1>
+            <p class="muted" style="margin-top:6px;">Patient ID: @Model.Patient.Id | Viewing as @Model.Doctor.FullName</p>
+
+            <div class="card" style="margin-top:16px;padding:20px;">
+                <h3>Biodata</h3>
+                <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:12px;">
+                    <div><strong>Age / Gender</strong><div class="muted">@Model.Age years, @Model.Patient.Gender</div></div>
+                    <div><strong>Date of Birth</strong><div class="muted">@Model.Patient.DateOfBirth.ToString("dd MMM yyyy")</div></div>
+                    <div><strong>Phone</strong><div class="muted">@Model.Patient.PhoneNumber</div></div>
+                    <div><strong>Address</strong><div class="muted">@Model.Patient.Address</div></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:16px;padding:20px;">
+                <h3>Add Medical Record</h3>
+                <form asp-action="AddMedicalRecord" asp-controller="Doctor" method="post" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:12px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+                    <input type="hidden" name="patientId" value="@Model.Patient.Id" />
+                    <input type="date" name="visitDate" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="diagnosis" placeholder="Diagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="treatment" placeholder="Treatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="notes" placeholder="Notes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <select name="status" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Scheduled">Scheduled</option>
+                    </select>
+                    <button class="btn btn-primary" type="submit">Create Medical Record</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
+                    <h3>Checkup Records for @Model.Patient.FullName</h3>
+                </div>
+                @if (Model.Records.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.Records)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.VisitDate.ToLocalTime().ToString("dd MMM yyyy") | @record.DoctorName</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div style="margin-bottom:8px;"><strong>Department:</strong> @record.DoctorSpecialization</div>
+                                <div style="margin-bottom:8px;"><strong>Treatment:</strong> @record.Treatment</div>
+                                <div style="margin-bottom:8px;"><strong>Notes:</strong> @record.Notes</div>
+                                <button
+                                    type="button"
+                                    class="btn"
+                                    data-open-edit-modal
+                                    data-record-id="@record.Id"
+                                    data-diagnosis="@record.Diagnosis"
+                                    data-treatment="@record.Treatment"
+                                    data-notes="@record.Notes"
+                                    data-status="@record.Status">Update Record</button>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editRecordModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60;align-items:center;justify-content:center;padding:16px;">
+    <div class="card" style="width:min(620px,100%);padding:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <h3>Edit Medical Record</h3>
+            <button type="button" id="closeEditModalBtn" class="btn">Close</button>
+        </div>
+        <form asp-action="UpdateRecord" asp-controller="Doctor" method="post" style="margin-top:12px;display:grid;gap:10px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+            <input type="hidden" name="patientId" value="@Model.Patient.Id" />
+            <input type="hidden" name="recordId" id="modalRecordId" />
+            <input type="hidden" name="from" value="PatientDetail" />
+            <label style="font-size:13px;">Diagnosis:
+                <input id="modalDiagnosis" name="diagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+            <label style="font-size:13px;">Treatment:
+                <input id="modalTreatment" name="treatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+            <label style="font-size:13px;">Notes:
+                <input id="modalNotes" name="notes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+            <label style="font-size:13px;">Status:
+                <select id="modalStatus" name="status" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;">
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Scheduled">Scheduled</option>
+                </select>
+            </label>
+            <button class="btn btn-primary" type="submit">Update Record</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
+    });
+
+    const editRecordModal = document.getElementById("editRecordModal");
+    const closeEditModalBtn = document.getElementById("closeEditModalBtn");
+    const modalRecordId = document.getElementById("modalRecordId");
+    const modalDiagnosis = document.getElementById("modalDiagnosis");
+    const modalTreatment = document.getElementById("modalTreatment");
+    const modalNotes = document.getElementById("modalNotes");
+    const modalStatus = document.getElementById("modalStatus");
+
+    document.querySelectorAll("[data-open-edit-modal]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            modalRecordId.value = btn.getAttribute("data-record-id") || "";
+            modalDiagnosis.value = btn.getAttribute("data-diagnosis") || "";
+            modalTreatment.value = btn.getAttribute("data-treatment") || "";
+            modalNotes.value = btn.getAttribute("data-notes") || "";
+            modalStatus.value = btn.getAttribute("data-status") || "Completed";
+            editRecordModal.style.display = "flex";
+        });
+    });
+
+    if (closeEditModalBtn) {
+        closeEditModalBtn.addEventListener("click", () => {
+            editRecordModal.style.display = "none";
+        });
+    }
+
+    if (editRecordModal) {
+        editRecordModal.addEventListener("click", (event) => {
+            if (event.target === editRecordModal) {
+                editRecordModal.style.display = "none";
+            }
+        });
+    }
+</script>
+}
+

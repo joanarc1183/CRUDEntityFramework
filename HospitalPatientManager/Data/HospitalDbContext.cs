@@ -1,9 +1,10 @@
 using HospitalPatientManager.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HospitalPatientManager.Data;
 
-public class HospitalDbContext : DbContext
+public class HospitalDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Patient> Patients => Set<Patient>();
     public DbSet<Doctor> Doctors => Set<Doctor>();
@@ -28,6 +29,8 @@ public class HospitalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Doctor>(entity =>
         {
             entity.HasKey(d => d.Id);

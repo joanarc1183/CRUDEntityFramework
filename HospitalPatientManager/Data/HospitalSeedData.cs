@@ -43,21 +43,21 @@ public static class HospitalSeedData
             new Doctor
             {
                 Id = 1,
-                FullName = "Dr. Maya Putri",
+                FullName = "Maya Putri",
                 Specialization = "Internal Medicine",
                 CreatedAt = new DateTime(2026, 1, 10, 7, 30, 0, DateTimeKind.Utc)
             },
             new Doctor
             {
                 Id = 2,
-                FullName = "Dr. Raka Wijaya",
+                FullName = "Raka Wijaya",
                 Specialization = "Pediatrics",
                 CreatedAt = new DateTime(2026, 1, 10, 7, 35, 0, DateTimeKind.Utc)
             },
             new Doctor
             {
                 Id = 3,
-                FullName = "Dr. Nanda Lestari",
+                FullName = "Nanda Lestari",
                 Specialization = "Cardiology",
                 CreatedAt = new DateTime(2026, 1, 10, 7, 40, 0, DateTimeKind.Utc)
             });
@@ -69,7 +69,10 @@ public static class HospitalSeedData
                 PatientId = 1,
                 DoctorId = 1,
                 VisitDate = new DateTime(2026, 1, 11, 9, 0, 0, DateTimeKind.Utc),
-                Diagnosis = "Seasonal flu"
+                Diagnosis = "Seasonal flu",
+                Treatment = "Rest, hydration, and paracetamol for fever",
+                Notes = "Follow-up if fever persists for more than 3 days",
+                Status = "Completed"
             },
             new MedicalRecord
             {
@@ -77,7 +80,10 @@ public static class HospitalSeedData
                 PatientId = 2,
                 DoctorId = 3,
                 VisitDate = new DateTime(2026, 1, 12, 10, 0, 0, DateTimeKind.Utc),
-                Diagnosis = "Hypertension"
+                Diagnosis = "Hypertension",
+                Treatment = "Blood pressure medication adjustment",
+                Notes = "Patient advised to reduce salt intake and monitor BP at home",
+                Status = "Completed"
             },
             new MedicalRecord
             {
@@ -85,7 +91,10 @@ public static class HospitalSeedData
                 PatientId = 3,
                 DoctorId = 2,
                 VisitDate = new DateTime(2026, 1, 13, 11, 0, 0, DateTimeKind.Utc),
-                Diagnosis = "Mild asthma"
+                Diagnosis = "Mild asthma",
+                Treatment = "Inhaler prescribed for symptom relief",
+                Notes = "Avoid known asthma triggers and carry inhaler",
+                Status = "Completed"
             },
             new MedicalRecord
             {
@@ -93,7 +102,10 @@ public static class HospitalSeedData
                 PatientId = 1,
                 DoctorId = 3,
                 VisitDate = new DateTime(2026, 1, 14, 13, 0, 0, DateTimeKind.Utc),
-                Diagnosis = "Chest pain follow-up"
+                Diagnosis = "Chest pain follow-up",
+                Treatment = "ECG and observation",
+                Notes = "No acute findings; continue monitoring symptoms",
+                Status = "Pending"
             },
             new MedicalRecord
             {
@@ -101,7 +113,10 @@ public static class HospitalSeedData
                 PatientId = 2,
                 DoctorId = 1,
                 VisitDate = new DateTime(2026, 1, 15, 15, 0, 0, DateTimeKind.Utc),
-                Diagnosis = "Gastritis"
+                Diagnosis = "Gastritis",
+                Treatment = "Antacid and dietary modification",
+                Notes = "Avoid spicy foods and late-night meals",
+                Status = "Scheduled"
             });
     }
 }

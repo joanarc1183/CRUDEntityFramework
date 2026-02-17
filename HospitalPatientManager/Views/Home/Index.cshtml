@@ -1,0 +1,78 @@
+@using HospitalPatientManager.ViewModels
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<main style="min-height:100vh;display:grid;place-items:center;padding:24px;">
+    <div class="card" style="width:min(640px,100%);padding:28px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;">
+            <h1 style="font-size:32px;">MediCare</h1>
+            <p class="muted" style="max-width:460px;margin:0;">Single login portal for</p>
+            <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px;">
+                <span class="pill">Patient</span>
+                <span class="pill">Doctor</span>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;padding:18px;">
+            <h3>Sign In</h3>
+            @* <p class="muted" style="font-size:13px;margin:6px 0 14px;">
+                Password rule:
+                <strong>Patient</strong> = full name without spaces,
+                <strong>Doctor</strong> = name without "Dr." and spaces,
+                <strong>Admin</strong> = <code>admin123</code> with name <code>admin</code>.
+            </p> *@
+            <form asp-action="SignIn" asp-controller="Account" method="post" class="grid" style="grid-template-columns:1fr;gap:10px;">
+                @Html.AntiForgeryToken()
+                <input name="fullName" placeholder="Full Name / admin" required style="height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <input name="password" type="password" placeholder="Password" required style="height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <button class="btn btn-primary" type="submit">Sign In</button>
+            </form>
+
+            <p class="muted" style="font-size:13px;margin-top:12px;">
+                Don't have an account yet?
+                <a href="#" id="toggleSignupLink" style="color:var(--primary);font-weight:600;">Sign up now</a>
+            </p>
+        </div>
+
+        <div class="card" id="signupPanel" style="margin-top:18px;padding:14px;display:none;">
+            <h3 style="font-size:16px;">Sign Up New Patient</h3>
+            <p class="muted" style="font-size:12px;margin:6px 0 10px;">Buat akun patient baru dulu kalau belum ada.</p>
+            <form asp-action="CreatePatient" asp-controller="Home" method="post" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+                @Html.AntiForgeryToken()
+                <input name="FullName" placeholder="Full Name" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <input name="DateOfBirth" type="date" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <select name="Gender" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
+                    <option value="">Gender...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <input name="PhoneNumber" placeholder="Phone Number" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <input name="Address" placeholder="Address" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                <button class="btn btn-primary" type="submit">Sign Up Patient</button>
+            </form>
+        </div>
+
+        <p class="muted" style="font-size:12px;margin-top:14px;">
+            Data loaded: @Model.Patients.Count patients, @Model.Doctors.Count doctors.
+        </p>
+    </div>
+</main>
+
+@section Scripts {
+<script>
+    const toggleSignupLink = document.getElementById("toggleSignupLink");
+    const signupPanel = document.getElementById("signupPanel");
+    let signupVisible = false;
+
+    if (toggleSignupLink && signupPanel) {
+        toggleSignupLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            signupVisible = !signupVisible;
+            signupPanel.style.display = signupVisible ? "block" : "none";
+            toggleSignupLink.textContent = signupVisible ? "Hide sign up" : "Sign up now";
+        });
+    }
+</script>
+}

@@ -1,0 +1,89 @@
+@using HospitalPatientManager.ViewModels
+@model PatientRecordsViewModel
+@{
+    ViewData["Title"] = "Checkup Records";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Patient/Dashboard?userId=@Model.Patient.Id">Dashboard</a>
+            <a href="/Patient/Biodata?userId=@Model.Patient.Id">My Biodata</a>
+            <a class="active" href="/Patient/Records?userId=@Model.Patient.Id">Checkup Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.Initials</div>
+            <div><div style="font-size:14px;font-weight:600;">@Model.Patient.FullName</div><div style="font-size:12px;color:#8eabb5;">Patient</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">Checkup Records</h1>
+            <p class="muted" style="margin-top:6px;">Complete history of your hospital checkups and treatments.</p>
+            <form asp-action="Records" asp-controller="Patient" method="get" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="hidden" name="userId" value="@Model.Patient.Id" />
+                <input name="searchTerm" value="@Model.SearchTerm" placeholder="Search diagnosis, doctor, status" style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:300px;" />
+                <button class="btn btn-primary" type="submit">Search</button>
+                <a class="btn" href="/Patient/Records?userId=@Model.Patient.Id">Reset</a>
+            </form>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
+                    <h3>All Records for @Model.Patient.FullName</h3>
+                </div>
+
+                @if (Model.Records.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.Records)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.VisitDate.ToLocalTime().ToString("dd MMM yyyy") | @record.DoctorName</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div><strong>Department:</strong> @record.DoctorSpecialization</div>
+                                <div><strong>Treatment:</strong> @record.Treatment</div>
+                                <div style="margin-top:8px;"><strong>Notes:</strong> @record.Notes</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const wrapper = btn.closest(".record");
+            wrapper.classList.toggle("open");
+        });
+    });
+</script>
+}
+

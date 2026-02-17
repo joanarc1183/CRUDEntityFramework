@@ -16,6 +16,18 @@ public class MedicalRecord
     [MaxLength(500)]
     public string Diagnosis { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(500)]
+    public string Treatment { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(1000)]
+    public string Notes { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(20)]
+    public string Status { get; set; } = "Completed";
+
     public virtual Patient? Patient { get; set; }
 
     public virtual Doctor? Doctor { get; set; }

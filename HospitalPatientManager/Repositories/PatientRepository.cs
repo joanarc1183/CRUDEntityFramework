@@ -15,6 +15,15 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
         return await _dbSet.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
     }
 
+    public async Task<Patient?> GetByIdWithRelationsAsync(int patientId)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Include(p => p.MedicalRecords)
+                .ThenInclude(m => m.Doctor)
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+    }
+
     public async Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName)
     {
         string normalizedName = fullName.Trim().ToLower();

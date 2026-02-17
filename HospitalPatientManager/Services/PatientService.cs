@@ -36,6 +36,28 @@ public class PatientService : IPatientService
         return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(patient), "Patient berhasil dibuat");
     }
 
+    public async Task<ServiceResult<PatientReadDto>> UpdatePatientAsync(PatientUpdateDto dto)
+    {
+        Patient? existingPatient = await _patientRepository.GetByIdAsync(dto.Id);
+        if (existingPatient is null)
+        {
+            return ServiceResult<PatientReadDto>.Fail("Patient tidak ditemukan.");
+        }
+
+        string newPhone = dto.PhoneNumber.Trim();
+        Patient? existingPhoneOwner = await _patientRepository.GetByPhoneNumberAsync(newPhone);
+        if (existingPhoneOwner is not null && existingPhoneOwner.Id != dto.Id)
+        {
+            return ServiceResult<PatientReadDto>.Fail("Nomor telepon sudah terdaftar oleh user lain.");
+        }
+
+        _mapper.Map(dto, existingPatient);
+        _patientRepository.Update(existingPatient);
+        await _patientRepository.SaveChangesAsync();
+
+        return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(existingPatient), "Biodata patient berhasil diperbarui.");
+    }
+
     public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecord medicalRecord)
     {
         await _medicalRecordRepository.AddAsync(medicalRecord);
@@ -60,5 +82,10 @@ public class PatientService : IPatientService
     public async Task<List<Patient>> GetAllPatientsAsync()
     {
         return await _patientRepository.GetAllPatientsAsync();
+    }
+
+    public async Task<Patient?> GetPatientByIdWithRelationsAsync(int patientId)
+    {
+        return await _patientRepository.GetByIdWithRelationsAsync(patientId);
     }
 }

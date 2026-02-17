@@ -1,0 +1,77 @@
+@using HospitalPatientManager.ViewModels
+@model AdminDoctorsViewModel
+@{
+    ViewData["Title"] = "Admin Doctors";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Admin/Dashboard">Dashboard</a>
+            <a href="/Admin/Patients">List Patient</a>
+            <a class="active" href="/Admin/Doctors">List Doctor</a>
+            <a href="/Admin/Records">List Checkup Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">AD</div>
+            <div><div style="font-size:14px;font-weight:600;">Admin</div><div style="font-size:12px;color:#8eabb5;">System</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>Menu</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">AD</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">List Doctor</h1>
+            <p class="muted" style="margin-top:6px;">All doctors in database.</p>
+            <form asp-action="Doctors" asp-controller="Admin" method="get" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <input name="searchTerm" value="@Model.SearchTerm" placeholder="Search doctor by name/specialization" style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:300px;" />
+                <button class="btn btn-primary" type="submit">Search</button>
+                <a class="btn" href="/Admin/Doctors">Reset</a>
+            </form>
+
+            <div class="card" style="margin-top:12px;padding:14px;">
+                <h3 style="font-size:16px;">Tambah Doctor</h3>
+                <form asp-action="AddDoctor" asp-controller="Admin" method="post" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                    @Html.AntiForgeryToken()
+                    <input name="FullName" placeholder="Doctor Full Name (e.g., Nanda Lestari)" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:320px;" />
+                    <input name="Specialization" placeholder="Specialization" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:220px;" />
+                    <button class="btn btn-primary" type="submit">Add Doctor</button>
+                </form>
+            </div>
+
+            <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:16px;">
+                @if (Model.Doctors.Count == 0)
+                {
+                    <div class="card" style="padding:16px;"><p class="muted">No doctor data.</p></div>
+                }
+                else
+                {
+                    @foreach (var doctor in Model.Doctors)
+                    {
+                        <div class="card" style="padding:16px;">
+                            <h3>@doctor.FullName</h3>
+                            <div class="muted" style="font-size:13px;margin-top:3px;">Doctor ID: @doctor.DoctorId</div>
+                            <p style="margin-top:10px;"><strong>@doctor.Specialization</strong></p>
+                            <div style="margin-top:10px;"><span class="badge status-completed">@doctor.RecordCount records</span></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+</script>
+}
+

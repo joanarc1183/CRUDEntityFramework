@@ -1,0 +1,121 @@
+@using HospitalPatientManager.ViewModels
+@model DoctorDashboardViewModel
+@{
+    ViewData["Title"] = "Doctor Dashboard";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a class="active" href="/Doctor/Dashboard?userId=@Model.Doctor.Id">Dashboard</a>
+            <a href="/Doctor/Patients?userId=@Model.Doctor.Id">Patients</a>
+            <a href="/Doctor/Records?userId=@Model.Doctor.Id">All Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.Initials</div>
+            <div><div style="font-size:14px;font-weight:600;">@Model.Doctor.FullName</div><div style="font-size:12px;color:#8eabb5;">Doctor</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">Welcome, @Model.Doctor.FullName</h1>
+            <p class="muted" style="margin-top:6px;">@Model.Doctor.Specialization Department.</p>
+
+            <div class="grid stats-grid" style="margin-top:16px;">
+                <div class="card stats-item"><div class="stats-icon">P</div><div><h3>@Model.MyPatientsCount</h3><div class="muted" style="font-size:12px;">My Patients</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#e6f5ee;color:var(--ok);">C</div><div><h3>@Model.CompletedCount</h3><div class="muted" style="font-size:12px;">Completed</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#e7f2fb;color:var(--info);">U</div><div><h3>@Model.UpcomingCount</h3><div class="muted" style="font-size:12px;">Upcoming</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#fff4d8;color:#a46a00;">R</div><div><h3>@Model.PendingCount</h3><div class="muted" style="font-size:12px;">Pending Results</div></div></div>
+            </div>
+
+            <div class="grid" style="grid-template-columns:1fr 2fr;margin-top:16px;">
+                <div class="card" style="padding:16px;">
+                    <h3>My Patients</h3>
+                    @if (Model.MyPatients.Count == 0)
+                    {
+                        <p class="muted" style="margin-top:10px;">No assigned patients.</p>
+                    }
+                    else
+                    {
+                        @foreach (var patient in Model.MyPatients.Take(6))
+                        {
+                            <a href="/Doctor/PatientDetail?userId=@Model.Doctor.Id&patientId=@patient.PatientId" style="display:block;padding:10px 0;border-bottom:1px solid var(--line);">
+                                @patient.FullName <span class="muted">(@patient.RecordCount records)</span>
+                            </a>
+                        }
+                    }
+                </div>
+                <div class="card" style="padding:16px;">
+                    <h3>Scheduled Appointments</h3>
+                    @if (Model.UpcomingRecords.Count == 0)
+                    {
+                        <p class="muted" style="margin-top:10px;">No scheduled appointments.</p>
+                    }
+                    else
+                    {
+                        @foreach (var record in Model.UpcomingRecords)
+                        {
+                            <div style="margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#f6fbfb;">
+                                <strong>@record.Diagnosis</strong>
+                                <div class="muted" style="font-size:13px;">Patient: @record.PatientName | @record.VisitDate.ToLocalTime().ToString("ddd, dd MMM yyyy")</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
+                    <h3>Recent Checkup Records</h3>
+                </div>
+                @if (Model.RecentRecords.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.RecentRecords)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.PatientName | @record.VisitDate.ToLocalTime().ToString("dd MMM yyyy")</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div><strong>Department:</strong> @record.DoctorSpecialization</div>
+                                <div style="margin-top:8px;"><strong>Treatment:</strong> @record.Treatment</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
+    });
+</script>
+}
+

@@ -1,0 +1,142 @@
+@using HospitalPatientManager.ViewModels
+@model PatientDashboardViewModel
+@{
+    ViewData["Title"] = "Patient Dashboard";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            
+            <strong>MediCare</strong>
+        </div>
+        <nav class="nav">
+            <a class="active" href="/Patient/Dashboard?userId=@Model.Patient.Id">Dashboard</a>
+            <a href="/Patient/Biodata?userId=@Model.Patient.Id">My Biodata</a>
+            <a href="/Patient/Records?userId=@Model.Patient.Id">Checkup Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.Initials</div>
+            <div>
+                <div style="font-size:14px;font-weight:600;">@Model.Patient.FullName</div>
+                <div style="font-size:12px;color:#8eabb5;">Patient</div>
+            </div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
+        </header>
+
+        <div class="page">
+            <div>
+                <h1 style="font-size:28px;">Welcome back, @Model.Patient.FullName.Split(' ')[0]</h1>
+                <p class="muted" style="margin-top:6px;">Here's an overview of your health records and upcoming appointments.</p>
+            </div>
+
+            <div class="grid stats-grid" style="margin-top:16px;">
+                <div class="card stats-item"><div class="stats-icon">#</div><div><h3>@Model.TotalCheckups</h3><div class="muted" style="font-size:12px;">Total Checkups</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#e6f5ee;color:var(--ok);">C</div><div><h3>@Model.CompletedCount</h3><div class="muted" style="font-size:12px;">Completed</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#e7f2fb;color:var(--info);">U</div><div><h3>@Model.UpcomingCount</h3><div class="muted" style="font-size:12px;">Upcoming</div></div></div>
+                <div class="card stats-item"><div class="stats-icon" style="background:#fff4d8;color:#a46a00;">P</div><div><h3>@Model.PendingCount</h3><div class="muted" style="font-size:12px;">Pending</div></div></div>
+            </div>
+
+            <div class="grid" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+                <div class="card" style="padding:16px;">
+                    <h3>Latest Vitals</h3>
+                    @if (Model.LatestRecord is null)
+                    {
+                        <p class="muted" style="margin-top:10px;">No completed visit yet.</p>
+                    }
+                    else
+                    {
+                        <div style="font-size:14px;margin-top:10px;">
+                            <div>Visit Date: <strong>@Model.LatestRecord.VisitDate.ToLocalTime().ToString("dd MMM yyyy")</strong></div>
+                            <div>Doctor: <strong>@(Model.LatestRecord.Doctor?.FullName ?? "-")</strong></div>
+                            <div>Diagnosis: <strong>@Model.LatestRecord.Diagnosis</strong></div>
+                        </div>
+                    }
+                </div>
+                <div class="card" style="padding:16px;">
+                    <h3>Quick Info</h3>
+                    <div style="font-size:14px;margin-top:10px;">
+                        <div>Age: <strong>@Model.Age years</strong></div>
+                        <div>Gender: <strong>@Model.Patient.Gender</strong></div>
+                        <div>Address: <strong>@Model.Patient.Address</strong></div>
+                        <div>Phone: <strong>@Model.Patient.PhoneNumber</strong></div>
+                    </div>
+                </div>
+                <div class="card" style="padding:16px;">
+                    <h3>Upcoming Appointments</h3>
+                    @if (Model.UpcomingRecords.Count == 0)
+                    {
+                        <p class="muted" style="margin-top:10px;">No upcoming appointments.</p>
+                    }
+                    else
+                    {
+                        @foreach (var appointment in Model.UpcomingRecords)
+                        {
+                            <div style="margin-top:10px;padding:10px;border-radius:10px;background:#f6fbfb;border:1px solid var(--line);">
+                                <strong>@appointment.Diagnosis</strong>
+                                <div class="muted" style="font-size:12px;">@(appointment.Doctor?.FullName ?? "-")</div>
+                                <div class="muted" style="font-size:12px;">@appointment.VisitDate.ToLocalTime().ToString("ddd, dd MMM yyyy")</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
+                    <h3>Recent Checkup Records</h3>
+                </div>
+                @if (Model.RecentRecords.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No medical records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.RecentRecords)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.VisitDate.ToLocalTime().ToString("dd MMM yyyy") | @(record.Doctor?.FullName ?? "-")</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div><strong>Treatment:</strong> @record.Treatment</div>
+                                <div style="margin-top:8px;"><strong>Notes:</strong> @record.Notes</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const wrapper = btn.closest(".record");
+            wrapper.classList.toggle("open");
+        });
+    });
+</script>
+}
+

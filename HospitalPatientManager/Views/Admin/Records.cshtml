@@ -1,0 +1,87 @@
+@using HospitalPatientManager.ViewModels
+@model AdminRecordsViewModel
+@{
+    ViewData["Title"] = "Admin Records";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Admin/Dashboard">Dashboard</a>
+            <a href="/Admin/Patients">List Patient</a>
+            <a href="/Admin/Doctors">List Doctor</a>
+            <a class="active" href="/Admin/Records">List Checkup Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">AD</div>
+            <div><div style="font-size:14px;font-weight:600;">Admin</div><div style="font-size:12px;color:#8eabb5;">System</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>Menu</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">AD</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">List Checkup Records</h1>
+            <p class="muted" style="margin-top:6px;">All checkup records in database.</p>
+            <form asp-action="Records" asp-controller="Admin" method="get" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <input name="searchTerm" value="@Model.SearchTerm" placeholder="Search by diagnosis, patient, doctor, status" style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:340px;" />
+                <button class="btn btn-primary" type="submit">Search</button>
+                <a class="btn" href="/Admin/Records">Reset</a>
+            </form>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                @if (Model.Records.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.Records)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.PatientName | @record.DoctorName | @record.VisitDate.ToLocalTime().ToString("dd MMM yyyy")</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div><strong>Department:</strong> @record.DoctorSpecialization</div>
+                                <div><strong>Treatment:</strong> @record.Treatment</div>
+                                <div style="margin-top:8px;"><strong>Notes:</strong> @record.Notes</div>
+                                <form asp-action="DeleteRecord" asp-controller="Admin" method="post" onsubmit="return confirm('Delete this record?');" style="margin-top:10px;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="recordId" value="@record.Id" />
+                                    <button class="btn" type="submit" style="background:#fff2f2;border-color:#f0c6c6;color:#9e2f2f;">Delete Record</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
+    });
+</script>
+}
+

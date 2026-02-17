@@ -1,0 +1,128 @@
+@using HospitalPatientManager.ViewModels
+@model DoctorRecordsViewModel
+@{
+    ViewData["Title"] = "All Records";
+}
+
+<div class="shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><strong>MediCare</strong></div>
+        <nav class="nav">
+            <a href="/Doctor/Dashboard?userId=@Model.Doctor.Id">Dashboard</a>
+            <a href="/Doctor/Patients?userId=@Model.Doctor.Id">Patients</a>
+            <a class="active" href="/Doctor/Records?userId=@Model.Doctor.Id">All Records</a>
+        </nav>
+        <div class="sidebar-user">
+            <div class="avatar">@Model.Initials</div>
+            <div><div style="font-size:14px;font-weight:600;">@Model.Doctor.FullName</div><div style="font-size:12px;color:#8eabb5;">Doctor</div></div>
+            <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="mobile-top">
+            <button class="menu-btn" data-open-menu>☰</button>
+            <strong>MediCare</strong>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
+        </header>
+        <div class="page">
+            <h1 style="font-size:28px;">All Records</h1>
+            <p class="muted" style="margin-top:6px;">Complete history of checkup records under your care.</p>
+            <form asp-action="Records" asp-controller="Doctor" method="get" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+                <input name="searchTerm" value="@Model.SearchTerm" placeholder="Search diagnosis, patient, status" style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:320px;" />
+                <button class="btn btn-primary" type="submit">Search</button>
+                <a class="btn" href="/Doctor/Records?userId=@Model.Doctor.Id">Reset</a>
+            </form>
+
+            <div class="card" style="margin-top:12px;padding:14px;">
+                <h3 style="font-size:16px;">Add Medical Record</h3>
+                <form asp-action="AddMedicalRecord" asp-controller="Doctor" method="post" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+                    <input type="hidden" name="from" value="Records" />
+                    <select name="patientId" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
+                        <option value="">Select patient...</option>
+                        @foreach (var patient in Model.Patients)
+                        {
+                            <option value="@patient.Id">@patient.Name</option>
+                        }
+                    </select>
+                    <input type="date" name="visitDate" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="diagnosis" placeholder="Diagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="treatment" placeholder="Treatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <input name="notes" placeholder="Notes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
+                    <select name="status" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Scheduled">Scheduled</option>
+                    </select>
+                    <button class="btn btn-primary" type="submit">Add Record</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top:16px;overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
+                    <h3>Records by @Model.Doctor.FullName</h3>
+                </div>
+
+                @if (Model.Records.Count == 0)
+                {
+                    <p class="muted" style="padding:16px 20px;">No records found.</p>
+                }
+                else
+                {
+                    @foreach (var record in Model.Records)
+                    {
+                        var statusClass = record.Status == "Scheduled"
+                            ? "status-scheduled"
+                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        <div class="record">
+                            <button class="record-head" data-record-toggle>
+                                <div>
+                                    <strong>@record.Diagnosis</strong>
+                                    <div class="record-sub">@record.PatientName | @record.VisitDate.ToLocalTime().ToString("dd MMM yyyy")</div>
+                                </div>
+                                <span class="badge @statusClass">@record.Status</span>
+                            </button>
+                            <div class="record-body">
+                                <div><strong>Department:</strong> @record.DoctorSpecialization</div>
+                                <div><strong>Treatment:</strong> @record.Treatment</div>
+                                <div style="margin-top:8px;"><strong>Notes:</strong> @record.Notes</div>
+                                <form asp-action="UpdateRecord" asp-controller="Doctor" method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+                                    <input type="hidden" name="recordId" value="@record.Id" />
+                                    <input type="hidden" name="from" value="Records" />
+                                    <label style="font-size:13px;">Diagnosis:
+                                        <input name="diagnosis" value="@record.Diagnosis" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
+                                    </label>
+                                    <label style="font-size:13px;">Treatment:
+                                        <input name="treatment" value="@record.Treatment" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
+                                    </label>
+                                    <label style="font-size:13px;">Notes:
+                                        <input name="notes" value="@record.Notes" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
+                                    </label>
+                                    <button class="btn" type="submit">Update Record</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.querySelector("[data-open-menu]");
+    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
+    });
+</script>
+}
+
