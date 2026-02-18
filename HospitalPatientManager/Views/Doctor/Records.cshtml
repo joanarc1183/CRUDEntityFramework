@@ -4,9 +4,19 @@
     ViewData["Title"] = "All Records";
 }
 
-<div class="shell">
+<div class="shell app-shell">
     <aside class="sidebar" id="sidebar">
-        <div class="brand"><strong>MediCare</strong></div>
+        <div class="brand" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <strong>MediCare</strong>
+            <button
+                type="button"
+                id="closeSidebarBtn"
+                class="menu-btn"
+                aria-label="Close sidebar"
+                style="border-color:#26414b;background:transparent;color:#dce8ec;">
+                x
+            </button>
+        </div>
         <nav class="nav">
             <a href="/Doctor/Dashboard?userId=@Model.Doctor.Id">Dashboard</a>
             <a href="/Doctor/Patients?userId=@Model.Doctor.Id">Patients</a>
@@ -18,10 +28,11 @@
             <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
         </div>
     </aside>
+    <div id="sidebarBackdrop" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:15;"></div>
 
     <div class="content">
         <header class="mobile-top">
-            <button class="menu-btn" data-open-menu>☰</button>
+            <button class="menu-btn" data-open-menu>&#9776;</button>
             <strong>MediCare</strong>
             <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
         </header>
@@ -34,32 +45,6 @@
                 <button class="btn btn-primary" type="submit">Search</button>
                 <a class="btn" href="/Doctor/Records?userId=@Model.Doctor.Id">Reset</a>
             </form>
-
-            <div class="card" style="margin-top:12px;padding:14px;">
-                <h3 style="font-size:16px;">Add Medical Record</h3>
-                <form asp-action="AddMedicalRecord" asp-controller="Doctor" method="post" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px;">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="userId" value="@Model.Doctor.Id" />
-                    <input type="hidden" name="from" value="Records" />
-                    <select name="patientId" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
-                        <option value="">Select patient...</option>
-                        @foreach (var patient in Model.Patients)
-                        {
-                            <option value="@patient.Id">@patient.Name</option>
-                        }
-                    </select>
-                    <input type="date" name="visitDate" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
-                    <input name="diagnosis" placeholder="Diagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
-                    <input name="treatment" placeholder="Treatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
-                    <input name="notes" placeholder="Notes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;" />
-                    <select name="status" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;">
-                        <option value="Completed">Completed</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Scheduled">Scheduled</option>
-                    </select>
-                    <button class="btn btn-primary" type="submit">Add Record</button>
-                </form>
-            </div>
 
             <div class="card" style="margin-top:16px;overflow:hidden;">
                 <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
@@ -74,11 +59,9 @@
                 {
                     @foreach (var record in Model.Records)
                     {
-                        var statusClass = record.Status == "Scheduled"
-                            ? "status-scheduled"
-                            : (record.Status == "Pending" ? "status-pending" : "status-completed");
+                        var statusClass = record.Status == "Pending" ? "status-pending" : "status-completed";
                         <div class="record">
-                            <button class="record-head" data-record-toggle>
+                            <button type="button" class="record-head" data-record-toggle>
                                 <div>
                                     <strong>@record.Diagnosis</strong>
                                     <div class="record-sub">@record.PatientName | @record.VisitDate.ToLocalTime().ToString("dd MMM yyyy")</div>
@@ -89,22 +72,18 @@
                                 <div><strong>Department:</strong> @record.DoctorSpecialization</div>
                                 <div><strong>Treatment:</strong> @record.Treatment</div>
                                 <div style="margin-top:8px;"><strong>Notes:</strong> @record.Notes</div>
-                                <form asp-action="UpdateRecord" asp-controller="Doctor" method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@Model.Doctor.Id" />
-                                    <input type="hidden" name="recordId" value="@record.Id" />
-                                    <input type="hidden" name="from" value="Records" />
-                                    <label style="font-size:13px;">Diagnosis:
-                                        <input name="diagnosis" value="@record.Diagnosis" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
-                                    </label>
-                                    <label style="font-size:13px;">Treatment:
-                                        <input name="treatment" value="@record.Treatment" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
-                                    </label>
-                                    <label style="font-size:13px;">Notes:
-                                        <input name="notes" value="@record.Notes" required style="height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:220px;margin-left:6px;" />
-                                    </label>
-                                    <button class="btn" type="submit">Update Record</button>
-                                </form>
+                                <button
+                                    type="button"
+                                    class="btn"
+                                    style="margin-top:12px;"
+                                    data-open-update-modal
+                                    data-record-id="@record.Id"
+                                    data-diagnosis="@record.Diagnosis"
+                                    data-treatment="@record.Treatment"
+                                    data-notes="@record.Notes"
+                                    data-status="@record.Status">
+                                    Update Record
+                                </button>
                             </div>
                         </div>
                     }
@@ -114,14 +93,205 @@
     </div>
 </div>
 
+<button
+    type="button"
+    id="openAddRecordModal"
+    class="btn btn-primary"
+    style="position:fixed;right:24px;bottom:24px;z-index:55;border-radius:999px;padding:12px 16px;box-shadow:0 10px 24px rgba(0,0,0,.18);">
+    + Add Medical Record
+</button>
+
+<div id="addRecordModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60;">
+    <div class="card" style="width:min(720px,100%);padding:20px;max-height:90vh;overflow:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <h3 style="margin:0;font-size:20px;">Add Medical Record</h3>
+            <button type="button" class="btn" id="closeAddRecordModal">Close</button>
+        </div>
+
+        <form asp-action="AddMedicalRecord" asp-controller="Doctor" method="post" class="grid" style="grid-template-columns:1fr;margin-top:12px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+            <input type="hidden" name="from" value="Records" />
+
+            <label style="font-size:13px;">Patient:
+                <select name="patientId" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;">
+                    <option value="">Select patient...</option>
+                    @foreach (var patient in Model.Patients)
+                    {
+                        <option value="@patient.Id">@patient.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label style="font-size:13px;">Visit Date:
+                <input type="date" name="visitDate" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Diagnosis:
+                <input name="diagnosis" placeholder="Diagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Treatment:
+                <input name="treatment" placeholder="Treatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Notes:
+                <input name="notes" placeholder="Notes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Status:
+                <select name="status" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;">
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </label>
+
+            <button class="btn btn-primary" type="submit">Add Record</button>
+        </form>
+    </div>
+</div>
+
+<div id="updateRecordModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60;">
+    <div class="card" style="width:min(640px,100%);padding:20px;max-height:90vh;overflow:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <h3 style="margin:0;font-size:20px;">Update Record</h3>
+            <button type="button" class="btn" id="closeUpdateRecordModal">Close</button>
+        </div>
+
+        <form asp-action="UpdateRecord" asp-controller="Doctor" method="post" class="grid" style="grid-template-columns:1fr;margin-top:12px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="userId" value="@Model.Doctor.Id" />
+            <input type="hidden" name="recordId" id="modalRecordId" />
+            <input type="hidden" name="from" value="Records" />
+
+            <label style="font-size:13px;">Diagnosis:
+                <input name="diagnosis" id="modalDiagnosis" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Treatment:
+                <input name="treatment" id="modalTreatment" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Notes:
+                <input name="notes" id="modalNotes" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Status:
+                <select name="status" id="modalStatus" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;">
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </label>
+
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
 <script>
     const sidebar = document.getElementById("sidebar");
     const menuBtn = document.querySelector("[data-open-menu]");
-    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+    const closeSidebar = () => {
+        if (!sidebar) return;
+        sidebar.classList.remove("open");
+        if (sidebarBackdrop) sidebarBackdrop.style.display = "none";
+    };
+
+    if (menuBtn) {
+        menuBtn.addEventListener("click", () => {
+            if (!sidebar) return;
+            const willOpen = !sidebar.classList.contains("open");
+            sidebar.classList.toggle("open");
+            if (sidebarBackdrop) sidebarBackdrop.style.display = willOpen ? "block" : "none";
+        });
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener("click", closeSidebar);
+    }
+
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener("click", closeSidebar);
+    }
+
+    document.querySelectorAll(".sidebar .nav a").forEach(link => {
+        link.addEventListener("click", closeSidebar);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeSidebar();
+        }
+    });
+const addRecordModal = document.getElementById("addRecordModal");
+    const openAddRecordModalBtn = document.getElementById("openAddRecordModal");
+    const closeAddRecordModalBtn = document.getElementById("closeAddRecordModal");
+
+    const closeAddRecordModal = () => {
+        addRecordModal.style.display = "none";
+    };
+
+    if (openAddRecordModalBtn) {
+        openAddRecordModalBtn.addEventListener("click", () => {
+            addRecordModal.style.display = "flex";
+        });
+    }
+
+    if (closeAddRecordModalBtn) {
+        closeAddRecordModalBtn.addEventListener("click", closeAddRecordModal);
+    }
+
+    if (addRecordModal) {
+        addRecordModal.addEventListener("click", (event) => {
+            if (event.target === addRecordModal) {
+                closeAddRecordModal();
+            }
+        });
+    }
+
+    const modal = document.getElementById("updateRecordModal");
+    const closeModalBtn = document.getElementById("closeUpdateRecordModal");
+    const modalRecordId = document.getElementById("modalRecordId");
+    const modalDiagnosis = document.getElementById("modalDiagnosis");
+    const modalTreatment = document.getElementById("modalTreatment");
+    const modalNotes = document.getElementById("modalNotes");
+    const modalStatus = document.getElementById("modalStatus");
+
+    document.querySelectorAll("[data-open-update-modal]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            modalRecordId.value = btn.dataset.recordId || "";
+            modalDiagnosis.value = btn.dataset.diagnosis || "";
+            modalTreatment.value = btn.dataset.treatment || "";
+            modalNotes.value = btn.dataset.notes || "";
+            modalStatus.value = btn.dataset.status === "Pending" ? "Pending" : "Completed";
+            modal.style.display = "flex";
+        });
+    });
+
+    const closeModal = () => {
+        modal.style.display = "none";
+    };
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", closeModal);
+    }
+
+    if (modal) {
+        modal.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    }
 
     document.querySelectorAll("[data-record-toggle]").forEach(btn => {
-        btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
+        btn.addEventListener("click", () => {
+            btn.closest(".record").classList.toggle("open");
+        });
     });
 </script>
 }

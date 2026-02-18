@@ -4,9 +4,19 @@
     ViewData["Title"] = "Doctor Dashboard";
 }
 
-<div class="shell">
+<div class="shell app-shell">
     <aside class="sidebar" id="sidebar">
-        <div class="brand"><strong>MediCare</strong></div>
+        <div class="brand" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <strong>MediCare</strong>
+            <button
+                type="button"
+                id="closeSidebarBtn"
+                class="menu-btn"
+                aria-label="Close sidebar"
+                style="border-color:#26414b;background:transparent;color:#dce8ec;">
+                x
+            </button>
+        </div>
         <nav class="nav">
             <a class="active" href="/Doctor/Dashboard?userId=@Model.Doctor.Id">Dashboard</a>
             <a href="/Doctor/Patients?userId=@Model.Doctor.Id">Patients</a>
@@ -18,10 +28,11 @@
             <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
         </div>
     </aside>
+    <div id="sidebarBackdrop" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:15;"></div>
 
     <div class="content">
         <header class="mobile-top">
-            <button class="menu-btn" data-open-menu>☰</button>
+            <button class="menu-btn" data-open-menu>&#9776;</button>
             <strong>MediCare</strong>
             <div class="avatar" style="width:30px;height:30px;font-size:12px;">@Model.Initials</div>
         </header>
@@ -111,11 +122,45 @@
 <script>
     const sidebar = document.getElementById("sidebar");
     const menuBtn = document.querySelector("[data-open-menu]");
-    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 
-    document.querySelectorAll("[data-record-toggle]").forEach(btn => {
+    const closeSidebar = () => {
+        if (!sidebar) return;
+        sidebar.classList.remove("open");
+        if (sidebarBackdrop) sidebarBackdrop.style.display = "none";
+    };
+
+    if (menuBtn) {
+        menuBtn.addEventListener("click", () => {
+            if (!sidebar) return;
+            const willOpen = !sidebar.classList.contains("open");
+            sidebar.classList.toggle("open");
+            if (sidebarBackdrop) sidebarBackdrop.style.display = willOpen ? "block" : "none";
+        });
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener("click", closeSidebar);
+    }
+
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener("click", closeSidebar);
+    }
+
+    document.querySelectorAll(".sidebar .nav a").forEach(link => {
+        link.addEventListener("click", closeSidebar);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeSidebar();
+        }
+    });
+document.querySelectorAll("[data-record-toggle]").forEach(btn => {
         btn.addEventListener("click", () => btn.closest(".record").classList.toggle("open"));
     });
 </script>
 }
+
 

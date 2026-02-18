@@ -4,9 +4,19 @@
     ViewData["Title"] = "Admin Doctors";
 }
 
-<div class="shell">
+<div class="shell app-shell">
     <aside class="sidebar" id="sidebar">
-        <div class="brand"><strong>MediCare</strong></div>
+        <div class="brand" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <strong>MediCare</strong>
+            <button
+                type="button"
+                id="closeSidebarBtn"
+                class="menu-btn"
+                aria-label="Close sidebar"
+                style="border-color:#26414b;background:transparent;color:#dce8ec;">
+                x
+            </button>
+        </div>
         <nav class="nav">
             <a href="/Admin/Dashboard">Dashboard</a>
             <a href="/Admin/Patients">List Patient</a>
@@ -19,10 +29,11 @@
             <a href="/Account/Logout" class="btn btn-primary" style="margin-left:auto;padding:6px 10px;">Out</a>
         </div>
     </aside>
+    <div id="sidebarBackdrop" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:15;"></div>
 
     <div class="content">
         <header class="mobile-top">
-            <button class="menu-btn" data-open-menu>Menu</button>
+            <button class="menu-btn" data-open-menu>&#9776;</button>
             <strong>MediCare</strong>
             <div class="avatar" style="width:30px;height:30px;font-size:12px;">AD</div>
         </header>
@@ -34,16 +45,6 @@
                 <button class="btn btn-primary" type="submit">Search</button>
                 <a class="btn" href="/Admin/Doctors">Reset</a>
             </form>
-
-            <div class="card" style="margin-top:12px;padding:14px;">
-                <h3 style="font-size:16px;">Tambah Doctor</h3>
-                <form asp-action="AddDoctor" asp-controller="Admin" method="post" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                    @Html.AntiForgeryToken()
-                    <input name="FullName" placeholder="Doctor Full Name (e.g., Nanda Lestari)" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:320px;" />
-                    <input name="Specialization" placeholder="Specialization" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;min-width:220px;" />
-                    <button class="btn btn-primary" type="submit">Add Doctor</button>
-                </form>
-            </div>
 
             <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:16px;">
                 @if (Model.Doctors.Count == 0)
@@ -67,11 +68,102 @@
     </div>
 </div>
 
+<button
+    type="button"
+    id="openAddDoctorModal"
+    class="btn btn-primary"
+    style="position:fixed;right:24px;bottom:24px;z-index:55;border-radius:999px;padding:12px 16px;box-shadow:0 10px 24px rgba(0,0,0,.18);">
+    + Add Doctor
+</button>
+
+<div id="addDoctorModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60;">
+    <div class="card" style="width:min(640px,100%);padding:20px;max-height:90vh;overflow:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <h3 style="margin:0;font-size:20px;">Tambah Doctor</h3>
+            <button type="button" class="btn" id="closeAddDoctorModal">Close</button>
+        </div>
+
+        <form asp-action="AddDoctor" asp-controller="Admin" method="post" class="grid" style="grid-template-columns:1fr;margin-top:12px;">
+            @Html.AntiForgeryToken()
+
+            <label style="font-size:13px;">Full Name:
+                <input name="FullName" placeholder="Doctor Full Name (e.g., Nanda Lestari)" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <label style="font-size:13px;">Specialization:
+                <input name="Specialization" placeholder="Specialization" required style="height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;display:block;width:100%;margin-top:6px;" />
+            </label>
+
+            <button class="btn btn-primary" type="submit">Add Doctor</button>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
 <script>
     const sidebar = document.getElementById("sidebar");
     const menuBtn = document.querySelector("[data-open-menu]");
-    if (menuBtn) menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+    const closeSidebar = () => {
+        if (!sidebar) return;
+        sidebar.classList.remove("open");
+        if (sidebarBackdrop) sidebarBackdrop.style.display = "none";
+    };
+
+    if (menuBtn) {
+        menuBtn.addEventListener("click", () => {
+            if (!sidebar) return;
+            const willOpen = !sidebar.classList.contains("open");
+            sidebar.classList.toggle("open");
+            if (sidebarBackdrop) sidebarBackdrop.style.display = willOpen ? "block" : "none";
+        });
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener("click", closeSidebar);
+    }
+
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener("click", closeSidebar);
+    }
+
+    document.querySelectorAll(".sidebar .nav a").forEach(link => {
+        link.addEventListener("click", closeSidebar);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeSidebar();
+        }
+    });
+const addDoctorModal = document.getElementById("addDoctorModal");
+    const openAddDoctorModalBtn = document.getElementById("openAddDoctorModal");
+    const closeAddDoctorModalBtn = document.getElementById("closeAddDoctorModal");
+
+    const closeAddDoctorModal = () => {
+        addDoctorModal.style.display = "none";
+    };
+
+    if (openAddDoctorModalBtn) {
+        openAddDoctorModalBtn.addEventListener("click", () => {
+            addDoctorModal.style.display = "flex";
+        });
+    }
+
+    if (closeAddDoctorModalBtn) {
+        closeAddDoctorModalBtn.addEventListener("click", closeAddDoctorModal);
+    }
+
+    if (addDoctorModal) {
+        addDoctorModal.addEventListener("click", (event) => {
+            if (event.target === addDoctorModal) {
+                closeAddDoctorModal();
+            }
+        });
+    }
 </script>
 }
+
 

@@ -102,6 +102,7 @@
             font-weight: 600;
             padding: 4px 10px;
             display: inline-block;
+            align-content: center;
         }
 
         .status-completed {
@@ -274,6 +275,28 @@
             border-bottom: 1px solid var(--line);
             padding: 12px 16px;
             background: #fff;
+        }
+
+        /* Global drawer sidebar behavior for role pages (Admin/Doctor/Patient). */
+        .app-shell .mobile-top {
+            display: flex;
+        }
+
+        .app-shell .sidebar {
+            position: fixed;
+            z-index: 20;
+            left: -280px;
+            top: 0;
+            bottom: 0;
+            transition: left .2s ease;
+        }
+
+        .app-shell .sidebar.open {
+            left: 0;
+        }
+
+        .app-shell .content {
+            width: 100%;
         }
 
         .menu-btn {
