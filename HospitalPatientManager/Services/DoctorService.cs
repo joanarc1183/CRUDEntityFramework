@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation;
 using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Repositories;
@@ -10,11 +11,16 @@ public class DoctorService : IDoctorService
 {
     private readonly IDoctorRepository _doctorRepository;
     private readonly IMapper _mapper;
+    private readonly IValidator<DoctorCreateDto> _doctorCreateValidator;
 
-    public DoctorService(IDoctorRepository doctorRepository, IMapper mapper)
+    public DoctorService(
+        IDoctorRepository doctorRepository,
+        IMapper mapper,
+        IValidator<DoctorCreateDto> doctorCreateValidator)
     {
         _doctorRepository = doctorRepository;
         _mapper = mapper;
+        _doctorCreateValidator = doctorCreateValidator;
     }
 
     public async Task<List<Doctor>> GetAllDoctorsAsync()
@@ -29,20 +35,14 @@ public class DoctorService : IDoctorService
 
     public async Task<ServiceResult<Doctor>> CreateDoctorAsync(DoctorCreateDto dto)
     {
-        string fullName = NormalizeDoctorName(dto.FullName);
-        string specialization = dto.Specialization.Trim();
-        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(specialization))
+        var validation = await _doctorCreateValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
         {
-            return ServiceResult<Doctor>.Fail("Doctor name and specialization are required.");
+            return ServiceResult<Doctor>.Fail(validation.Errors[0].ErrorMessage);
         }
 
-        var doctors = await _doctorRepository.GetAllDoctorsAsync();
-        bool exists = doctors.Any(d =>
-            string.Equals(NormalizeDoctorName(d.FullName), fullName, StringComparison.OrdinalIgnoreCase));
-        if (exists)
-        {
-            return ServiceResult<Doctor>.Fail("Doctor with the same name already exists.");
-        }
+        string fullName = NormalizeDoctorName(dto.FullName);
+        string specialization = dto.Specialization.Trim();
 
         var doctor = _mapper.Map<Doctor>(dto);
         doctor.FullName = fullName;

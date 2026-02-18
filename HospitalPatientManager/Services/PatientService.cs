@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation;
 using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Repositories;
@@ -9,21 +10,28 @@ public class PatientService : IPatientService
 {
     private readonly IPatientRepository _patientRepository;
     private readonly IMapper _mapper;
+    private readonly IValidator<PatientCreateDto> _patientCreateValidator;
+    private readonly IValidator<PatientUpdateDto> _patientUpdateValidator;
 
-    public PatientService(IPatientRepository patientRepository, IMapper mapper)
+    public PatientService(
+        IPatientRepository patientRepository,
+        IMapper mapper,
+        IValidator<PatientCreateDto> patientCreateValidator,
+        IValidator<PatientUpdateDto> patientUpdateValidator)
     {
         _patientRepository = patientRepository;
         _mapper = mapper;
+        _patientCreateValidator = patientCreateValidator;
+        _patientUpdateValidator = patientUpdateValidator;
     }
 
     // From PatientController
     public async Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto)
     {
-        Patient? existing = await _patientRepository.GetByPhoneNumberAsync(dto.PhoneNumber.Trim());
-        // Nama user bisa sama, tapi tidak dengan nomor teleponnya
-        if (existing is not null)
+        var validation = await _patientCreateValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
         {
-            return ServiceResult<PatientReadDto>.Fail("Tidak dapat menambahkan Pasien. Nomor telepon sudah terdaftar.");
+            return ServiceResult<PatientReadDto>.Fail(validation.Errors[0].ErrorMessage);
         }
 
         Patient patient = _mapper.Map<Patient>(dto);
@@ -37,17 +45,16 @@ public class PatientService : IPatientService
 
     public async Task<ServiceResult<PatientReadDto>> UpdatePatientAsync(PatientUpdateDto dto)
     {
+        var validation = await _patientUpdateValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+        {
+            return ServiceResult<PatientReadDto>.Fail(validation.Errors[0].ErrorMessage);
+        }
+
         Patient? existingPatient = await _patientRepository.GetByIdAsync(dto.Id);
         if (existingPatient is null)
         {
             return ServiceResult<PatientReadDto>.Fail("Patient tidak ditemukan.");
-        }
-
-        string newPhone = dto.PhoneNumber.Trim();
-        Patient? existingPhoneOwner = await _patientRepository.GetByPhoneNumberAsync(newPhone);
-        if (existingPhoneOwner is not null && existingPhoneOwner.Id != dto.Id)
-        {
-            return ServiceResult<PatientReadDto>.Fail("Nomor telepon sudah terdaftar oleh user lain.");
         }
 
         _mapper.Map(dto, existingPatient);

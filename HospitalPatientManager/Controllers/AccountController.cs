@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using FluentValidation;
+using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Services;
 using Microsoft.AspNetCore.Identity;
@@ -13,19 +15,22 @@ public class AccountController : Controller
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IPatientService _patientService;
     private readonly IDoctorService _doctorService;
+    private readonly IValidator<LoginDto> _loginValidator;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         RoleManager<IdentityRole> roleManager,
         IPatientService patientService,
-        IDoctorService doctorService)
+        IDoctorService doctorService,
+        IValidator<LoginDto> loginValidator)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _patientService = patientService;
         _doctorService = doctorService;
+        _loginValidator = loginValidator;
     }
 
     [HttpGet]
@@ -36,16 +41,17 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SignIn(string fullName, string password)
+    public async Task<IActionResult> SignIn(LoginDto dto)
     {
-        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(password))
+        var validationResult = await _loginValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
         {
-            TempData["FlashError"] = "Name and password are required.";
+            TempData["FlashError"] = validationResult.Errors[0].ErrorMessage;
             return RedirectToAction("Index", "Home");
         }
 
-        string normalizedName = fullName.Trim();
-        string normalizedPassword = password.Trim();
+        string normalizedName = dto.FullName.Trim();
+        string normalizedPassword = dto.Password.Trim();
 
         if (string.Equals(normalizedName, "admin", StringComparison.OrdinalIgnoreCase))
         {

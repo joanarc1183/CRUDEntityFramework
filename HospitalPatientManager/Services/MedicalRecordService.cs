@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation;
 using HospitalPatientManager.DTOs.MedicalRecord;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Repositories;
@@ -9,11 +10,22 @@ public class MedicalRecordService : IMedicalRecordService
 {
     private readonly IMedicalRecordRepository _medicalRecordRepository;
     private readonly IMapper _mapper;
+    private readonly IValidator<MedicalRecordCreateDto> _medicalRecordCreateValidator;
+    private readonly IValidator<UpdateMedicalRecordDto> _updateMedicalRecordValidator;
+    private readonly IValidator<UpdateDiagnosisDto> _updateDiagnosisValidator;
 
-    public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository, IMapper mapper)
+    public MedicalRecordService(
+        IMedicalRecordRepository medicalRecordRepository,
+        IMapper mapper,
+        IValidator<MedicalRecordCreateDto> medicalRecordCreateValidator,
+        IValidator<UpdateMedicalRecordDto> updateMedicalRecordValidator,
+        IValidator<UpdateDiagnosisDto> updateDiagnosisValidator)
     {
         _medicalRecordRepository = medicalRecordRepository;
         _mapper = mapper;
+        _medicalRecordCreateValidator = medicalRecordCreateValidator;
+        _updateMedicalRecordValidator = updateMedicalRecordValidator;
+        _updateDiagnosisValidator = updateDiagnosisValidator;
     }
 
     public async Task<List<MedicalRecord>> GetRecordsByPatientFullNameAsync(string fullName)
@@ -43,9 +55,10 @@ public class MedicalRecordService : IMedicalRecordService
 
     public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecordCreateDto dto)
     {
-        if (!IsValidStatus(dto.Status))
+        var validation = await _medicalRecordCreateValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
         {
-            return ServiceResult<MedicalRecord>.Fail("Status must be Completed, Pending, or Scheduled.");
+            return ServiceResult<MedicalRecord>.Fail(validation.Errors[0].ErrorMessage);
         }
 
         var medicalRecord = _mapper.Map<MedicalRecord>(dto);
@@ -63,6 +76,12 @@ public class MedicalRecordService : IMedicalRecordService
 
     public async Task<ServiceResult<MedicalRecord>> UpdateDiagnosisAsync(int medicalRecordId, UpdateDiagnosisDto dto)
     {
+        var validation = await _updateDiagnosisValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+        {
+            return ServiceResult<MedicalRecord>.Fail(validation.Errors[0].ErrorMessage);
+        }
+
         MedicalRecord? record = await _medicalRecordRepository.GetByIdAsync(medicalRecordId);
         if (record is null)
         {
@@ -80,9 +99,10 @@ public class MedicalRecordService : IMedicalRecordService
 
     public async Task<ServiceResult<MedicalRecord>> UpdateRecordDetailsAsync(UpdateMedicalRecordDto dto)
     {
-        if (!IsValidStatus(dto.Status))
+        var validation = await _updateMedicalRecordValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
         {
-            return ServiceResult<MedicalRecord>.Fail("Status must be Completed, Pending, or Scheduled.");
+            return ServiceResult<MedicalRecord>.Fail(validation.Errors[0].ErrorMessage);
         }
 
         MedicalRecord? record = await _medicalRecordRepository.GetByIdAsync(dto.RecordId);
@@ -115,10 +135,5 @@ public class MedicalRecordService : IMedicalRecordService
         await _medicalRecordRepository.SaveChangesAsync();
 
         return ServiceResult<bool>.Ok(true, "Record deleted successfully.");
-    }
-
-    private static bool IsValidStatus(string status)
-    {
-        return status.Trim() is "Completed" or "Pending" or "Scheduled";
     }
 }

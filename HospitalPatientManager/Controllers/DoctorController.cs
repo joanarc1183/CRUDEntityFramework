@@ -129,7 +129,7 @@ public class DoctorController : Controller
         status = status.Trim();
         if (!IsValidStatus(status))
         {
-            TempData["FlashError"] = "Status must be Completed, Pending, or Scheduled.";
+            TempData["FlashError"] = "Status must be Completed or Pending.";
             if (string.Equals(from, "Records", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction(nameof(Records), new { userId });
@@ -202,7 +202,7 @@ public class DoctorController : Controller
         status = status.Trim();
         if (!IsValidStatus(status))
         {
-            TempData["FlashError"] = "Status must be Completed, Pending, or Scheduled.";
+            TempData["FlashError"] = "Status must be Completed or Pending.";
             if (string.Equals(from, "PatientDetail", StringComparison.OrdinalIgnoreCase) && patientId is not null)
             {
                 return RedirectToAction(nameof(PatientDetail), new { userId, patientId });
@@ -366,7 +366,7 @@ public class DoctorController : Controller
 
     private static bool IsValidStatus(string status)
     {
-        return status is "Completed" or "Pending" or "Scheduled";
+        return status is "Completed" or "Pending";
     }
 
     private static string GetInitials(string fullName)

@@ -1,3 +1,4 @@
+using FluentValidation;
 using HospitalPatientManager.DTOs;
 using HospitalPatientManager.Services;
 using HospitalPatientManager.ViewModels;
@@ -9,11 +10,13 @@ public class HomeController : Controller
 {
     private readonly IPatientService _patientService;
     private readonly IDoctorService _doctorService;
+    private readonly IValidator<SignUpDto> _signUpValidator;
 
-    public HomeController(IPatientService patientService, IDoctorService doctorService)
+    public HomeController(IPatientService patientService, IDoctorService doctorService, IValidator<SignUpDto> signUpValidator)
     {
         _patientService = patientService;
         _doctorService = doctorService;
+        _signUpValidator = signUpValidator;
     }
 
     public async Task<IActionResult> Index()
@@ -50,20 +53,26 @@ public class HomeController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     // After press button "Sign Up Patient" in index.cshtml
-    public async Task<IActionResult> CreatePatient(PatientCreateDto dto)
+    public async Task<IActionResult> CreatePatient(SignUpDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.FullName) ||
-            string.IsNullOrWhiteSpace(dto.DateOfBirth.ToString()) ||
-            string.IsNullOrWhiteSpace(dto.Gender) ||
-            string.IsNullOrWhiteSpace(dto.Address) ||
-            string.IsNullOrWhiteSpace(dto.PhoneNumber))
+        var validationResult = await _signUpValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
         {
-            TempData["FlashError"] = "All patient fields are required.";
+            TempData["FlashError"] = validationResult.Errors[0].ErrorMessage;
             return RedirectToAction(nameof(Index));
         }
 
+        var patientCreateDto = new PatientCreateDto
+        {
+            FullName = dto.FullName,
+            DateOfBirth = dto.DateOfBirth,
+            Gender = dto.Gender,
+            Address = dto.Address,
+            PhoneNumber = dto.PhoneNumber
+        };
+
         // Call patient service to create new patient
-        var result = await _patientService.CreatePatientAsync(dto);
+        var result = await _patientService.CreatePatientAsync(patientCreateDto);
 
         if (!result.Success)
         {

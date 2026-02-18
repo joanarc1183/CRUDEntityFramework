@@ -1,8 +1,10 @@
+using FluentValidation;
 using HospitalPatientManager.Data;
 using HospitalPatientManager.Mappings;
 using HospitalPatientManager.Models;
 using HospitalPatientManager.Repositories;
 using HospitalPatientManager.Services;
+using HospitalPatientManager.Validators;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +41,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 
 // Add Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
