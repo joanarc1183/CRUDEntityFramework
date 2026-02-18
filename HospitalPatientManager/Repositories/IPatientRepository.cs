@@ -9,3 +9,4 @@ public interface IPatientRepository : IRepository<Patient>
     Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName);
     Task<List<Patient>> GetAllPatientsAsync();
 }
+

@@ -21,7 +21,6 @@ public class DoctorController : Controller
         _patientService = patientService;
         _medicalRecordService = medicalRecordService;
     }
-
     public async Task<IActionResult> Dashboard(int? userId)
     {
         if (userId is null)
@@ -61,7 +60,6 @@ public class DoctorController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> Patients(int? userId, string? fullName)
     {
         if (userId is null)
@@ -240,7 +238,6 @@ public class DoctorController : Controller
         TempData["FlashError"] = "Doctor is not allowed to delete records. Please use admin account.";
         return RedirectToAction(nameof(Records), new { userId });
     }
-
     public async Task<IActionResult> PatientDetail(int? userId, int? patientId)
     {
         if (userId is null || patientId is null)
@@ -274,7 +271,6 @@ public class DoctorController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> Records(int? userId, string? searchTerm)
     {
         if (userId is null)
@@ -321,7 +317,6 @@ public class DoctorController : Controller
 
         return View(model);
     }
-
     private static List<DoctorPatientCardViewModel> BuildPatientCards(IEnumerable<MedicalRecord> records)
     {
         return records
@@ -347,7 +342,6 @@ public class DoctorController : Controller
             .OrderBy(c => c.FullName)
             .ToList();
     }
-
     private static RecordItemViewModel ToRecordItem(MedicalRecord record)
     {
         return new RecordItemViewModel
@@ -363,12 +357,10 @@ public class DoctorController : Controller
             Treatment = record.Treatment
         };
     }
-
     private static bool IsValidStatus(string status)
     {
         return status is "Completed" or "Pending";
     }
-
     private static string GetInitials(string fullName)
     {
         var tokens = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -384,7 +376,6 @@ public class DoctorController : Controller
 
         return string.Concat(tokens[0][0], tokens[^1][0]).ToUpperInvariant();
     }
-
     private static int GetAge(DateOnly dateOfBirth)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
@@ -397,3 +388,4 @@ public class DoctorController : Controller
         return age;
     }
 }
+

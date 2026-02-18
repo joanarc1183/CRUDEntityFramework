@@ -19,3 +19,4 @@ public class Doctor
     public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 }
 
+

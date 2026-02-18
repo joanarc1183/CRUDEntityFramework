@@ -9,7 +9,6 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
     public MedicalRecordRepository(HospitalDbContext context) : base(context)
     {
     }
-
     public async Task<List<MedicalRecord>> GetRecordsByPatientFullNameAsync(string fullName)
     {
         string normalizedName = fullName.Trim().ToLower();
@@ -22,7 +21,6 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
             .OrderByDescending(m => m.VisitDate)
             .ToListAsync();
     }
-
     public async Task<List<MedicalRecord>> GetAllWithRelationsAsync()
     {
         return await _dbSet
@@ -32,7 +30,6 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
             .OrderByDescending(m => m.VisitDate)
             .ToListAsync();
     }
-
     public async Task<List<MedicalRecord>> GetRecordsByDoctorIdAsync(int doctorId)
     {
         return await _dbSet
@@ -43,7 +40,6 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
             .OrderByDescending(m => m.VisitDate)
             .ToListAsync();
     }
-
     public async Task<List<MedicalRecord>> GetRecordsByDoctorAndPatientIdsAsync(int doctorId, IReadOnlyCollection<int> patientIds)
     {
         if (patientIds.Count == 0)
@@ -59,7 +55,6 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
             .OrderByDescending(m => m.VisitDate)
             .ToListAsync();
     }
-
     public async Task<List<MedicalRecord>> GetRecordsByPatientIdAsync(int patientId)
     {
         return await _dbSet
@@ -71,3 +66,4 @@ public class MedicalRecordRepository : Repository<MedicalRecord>, IMedicalRecord
             .ToListAsync();
     }
 }
+

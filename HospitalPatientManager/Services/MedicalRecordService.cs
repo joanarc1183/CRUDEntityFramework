@@ -28,31 +28,44 @@ public class MedicalRecordService : IMedicalRecordService
         _updateDiagnosisValidator = updateDiagnosisValidator;
     }
 
+    // Dipanggil dari:
+    // - Saat ini belum ada pemanggil langsung di controller (tersedia untuk kebutuhan pencarian by fullName).
     public async Task<List<MedicalRecord>> GetRecordsByPatientFullNameAsync(string fullName)
     {
         return await _medicalRecordRepository.GetRecordsByPatientFullNameAsync(fullName);
     }
 
+    // Dipanggil dari:
+    // - AdminController.cs -> Dashboard(...), Doctors(...), Records(...)
     public async Task<List<MedicalRecord>> GetAllRecordAsync()
     {
         return await _medicalRecordRepository.GetAllWithRelationsAsync();
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> Dashboard(...), Patients(...), Records(...)
     public async Task<List<MedicalRecord>> GetRecordsByDoctorIdAsync(int doctorId)
     {
         return await _medicalRecordRepository.GetRecordsByDoctorIdAsync(doctorId);
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> Patients(...)
     public async Task<List<MedicalRecord>> GetRecordsByDoctorAndPatientIdsAsync(int doctorId, IReadOnlyCollection<int> patientIds)
     {
         return await _medicalRecordRepository.GetRecordsByDoctorAndPatientIdsAsync(doctorId, patientIds);
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> PatientDetail(...)
+    // - AdminController.cs -> PatientDetail(...)
     public async Task<List<MedicalRecord>> GetRecordsByPatientIdAsync(int patientId)
     {
         return await _medicalRecordRepository.GetRecordsByPatientIdAsync(patientId);
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> AddMedicalRecord(...)
     public async Task<ServiceResult<MedicalRecord>> CreateMedicalRecordAsync(MedicalRecordCreateDto dto)
     {
         var validation = await _medicalRecordCreateValidator.ValidateAsync(dto);
@@ -74,6 +87,8 @@ public class MedicalRecordService : IMedicalRecordService
         return ServiceResult<MedicalRecord>.Ok(medicalRecord, "Medical record berhasil dibuat");
     }
 
+    // Dipanggil dari:
+    // - Saat ini belum ada endpoint/controller yang memanggil method ini langsung.
     public async Task<ServiceResult<MedicalRecord>> UpdateDiagnosisAsync(int medicalRecordId, UpdateDiagnosisDto dto)
     {
         var validation = await _updateDiagnosisValidator.ValidateAsync(dto);
@@ -97,6 +112,8 @@ public class MedicalRecordService : IMedicalRecordService
         return ServiceResult<MedicalRecord>.Ok(record, "Diagnosis berhasil diperbarui.");
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> UpdateRecord(...)
     public async Task<ServiceResult<MedicalRecord>> UpdateRecordDetailsAsync(UpdateMedicalRecordDto dto)
     {
         var validation = await _updateMedicalRecordValidator.ValidateAsync(dto);
@@ -123,6 +140,8 @@ public class MedicalRecordService : IMedicalRecordService
         return ServiceResult<MedicalRecord>.Ok(record, "Record updated successfully.");
     }
 
+    // Dipanggil dari:
+    // - AdminController.cs -> DeleteRecord(...)
     public async Task<ServiceResult<bool>> DeleteRecordAsync(int id)
     {
         MedicalRecord? record = await _medicalRecordRepository.GetByIdAsync(id);
@@ -137,3 +156,5 @@ public class MedicalRecordService : IMedicalRecordService
         return ServiceResult<bool>.Ok(true, "Record deleted successfully.");
     }
 }
+
+

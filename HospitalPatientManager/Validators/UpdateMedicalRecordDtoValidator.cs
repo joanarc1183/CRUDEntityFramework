@@ -33,3 +33,4 @@ public class UpdateMedicalRecordDtoValidator : AbstractValidator<UpdateMedicalRe
             .WithMessage("Status must be Completed or Pending.");
     }
 }
+

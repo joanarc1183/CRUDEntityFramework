@@ -23,16 +23,24 @@ public class DoctorService : IDoctorService
         _doctorCreateValidator = doctorCreateValidator;
     }
 
+    // Dipanggil dari:
+    // - HomeController.cs -> Index(...)
+    // - AdminController.cs -> Dashboard(...), Doctors(...)
+    // - AccountController.cs -> SignIn(...)
     public async Task<List<Doctor>> GetAllDoctorsAsync()
     {
         return await _doctorRepository.GetAllDoctorsAsync();
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> Dashboard(...), Patients(...), PatientDetail(...), Records(...), AddMedicalRecord(...)
     public async Task<Doctor?> GetDoctorByIdAsync(int doctorId)
     {
         return await _doctorRepository.GetByIdReadOnlyAsync(doctorId);
     }
 
+    // Dipanggil dari:
+    // - AdminController.cs -> AddDoctor(...)
     public async Task<ServiceResult<Doctor>> CreateDoctorAsync(DoctorCreateDto dto)
     {
         var validation = await _doctorCreateValidator.ValidateAsync(dto);
@@ -55,9 +63,13 @@ public class DoctorService : IDoctorService
         return ServiceResult<Doctor>.Ok(doctor, "Doctor created successfully.");
     }
 
+    // Dipanggil internal dari:
+    // - DoctorService.cs -> CreateDoctorAsync(...)
     private static string NormalizeDoctorName(string fullName)
     {
         string withoutTitle = Regex.Replace(fullName.Trim(), "^(dr\\.?\\s+)", string.Empty, RegexOptions.IgnoreCase);
         return Regex.Replace(withoutTitle, "\\s+", " ").Trim();
     }
 }
+
+

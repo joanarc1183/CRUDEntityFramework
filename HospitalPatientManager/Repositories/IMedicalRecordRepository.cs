@@ -10,3 +10,4 @@ public interface IMedicalRecordRepository : IRepository<MedicalRecord>
     Task<List<MedicalRecord>> GetRecordsByDoctorAndPatientIdsAsync(int doctorId, IReadOnlyCollection<int> patientIds);
     Task<List<MedicalRecord>> GetRecordsByPatientIdAsync(int patientId);
 }
+

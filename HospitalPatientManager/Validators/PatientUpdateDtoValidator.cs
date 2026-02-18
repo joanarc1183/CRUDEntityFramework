@@ -56,3 +56,4 @@ public class PatientUpdateDtoValidator : AbstractValidator<PatientUpdateDto>
             .WithMessage("Phone number is already registered by another user.");
     }
 }
+

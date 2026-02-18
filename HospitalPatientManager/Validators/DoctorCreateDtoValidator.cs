@@ -25,10 +25,10 @@ public class DoctorCreateDtoValidator : AbstractValidator<DoctorCreateDto>
             .WithMessage("Specialization is required.")
             .MaximumLength(50);
     }
-
     private static string NormalizeDoctorName(string fullName)
     {
         string withoutTitle = Regex.Replace(fullName.Trim(), "^(dr\\.?\\s+)", string.Empty, RegexOptions.IgnoreCase);
         return Regex.Replace(withoutTitle, "\\s+", " ").Trim();
     }
 }
+

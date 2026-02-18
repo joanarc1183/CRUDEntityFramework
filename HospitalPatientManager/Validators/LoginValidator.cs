@@ -16,3 +16,4 @@ public class LoginValidator : AbstractValidator<LoginDto>
             .WithMessage("Password is required.");
     }
 }
+

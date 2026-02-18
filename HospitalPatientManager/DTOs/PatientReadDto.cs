@@ -10,3 +10,4 @@ public class PatientReadDto
     public string PhoneNumber { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
+

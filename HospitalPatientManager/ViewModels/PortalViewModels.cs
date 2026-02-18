@@ -152,3 +152,4 @@ public class RecordItemViewModel
     public string Notes { get; init; } = string.Empty;
     public string Treatment { get; init; } = string.Empty;
 }
+

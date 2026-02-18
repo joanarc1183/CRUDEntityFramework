@@ -18,3 +18,4 @@ public class MappingProfile : Profile
         CreateMap<UpdateMedicalRecordDto, MedicalRecord>();
     }
 }
+

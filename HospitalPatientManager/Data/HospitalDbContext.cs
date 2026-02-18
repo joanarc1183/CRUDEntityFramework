@@ -18,7 +18,6 @@ public class HospitalDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -26,7 +25,6 @@ public class HospitalDbContext : IdentityDbContext<ApplicationUser>
             optionsBuilder.UseSqlite("Data Source=hospital.db");
         }
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -59,4 +57,5 @@ public class HospitalDbContext : IdentityDbContext<ApplicationUser>
         HospitalSeedData.Seed(modelBuilder);
     }
 }
+
 

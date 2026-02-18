@@ -15,3 +15,4 @@ public interface IMedicalRecordService
     Task<ServiceResult<MedicalRecord>> UpdateRecordDetailsAsync(UpdateMedicalRecordDto dto);
     Task<ServiceResult<bool>> DeleteRecordAsync(int id);
 }
+

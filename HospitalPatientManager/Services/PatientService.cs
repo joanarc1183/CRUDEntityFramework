@@ -25,7 +25,8 @@ public class PatientService : IPatientService
         _patientUpdateValidator = patientUpdateValidator;
     }
 
-    // From PatientController
+    // Dipanggil dari:
+    // - HomeController.cs -> CreatePatient(...)
     public async Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto)
     {
         var validation = await _patientCreateValidator.ValidateAsync(dto);
@@ -43,6 +44,8 @@ public class PatientService : IPatientService
         return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(patient), "Patient berhasil dibuat");
     }
 
+    // Dipanggil dari:
+    // - PatientController.cs -> UpdateBiodata(...)
     public async Task<ServiceResult<PatientReadDto>> UpdatePatientAsync(PatientUpdateDto dto)
     {
         var validation = await _patientUpdateValidator.ValidateAsync(dto);
@@ -64,11 +67,15 @@ public class PatientService : IPatientService
         return ServiceResult<PatientReadDto>.Ok(_mapper.Map<PatientReadDto>(existingPatient), "Biodata patient berhasil diperbarui.");
     }
 
+    // Dipanggil dari:
+    // - DoctorController.cs -> Patients(...)
     public async Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName)
     {
         return await _patientRepository.GetPatientHistoryByFullNameAsync(fullName);
     }
 
+    // Dipanggil dari:
+    // - PatientController.cs -> SearchByNameDto(...)
     public async Task<ServiceResult<List<PatientReadDto>>> GetPatientHistoryByFullNameDtoAsync(string fullName)
     {
         List<Patient> patients = await _patientRepository.GetPatientHistoryByFullNameAsync(fullName);
@@ -77,13 +84,24 @@ public class PatientService : IPatientService
         return ServiceResult<List<PatientReadDto>>.Ok(result);
     }
 
+    // Dipanggil dari:
+    // - HomeController.cs -> Index(...)
+    // - AdminController.cs -> Dashboard(...), Patients(...)
+    // - DoctorController.cs -> Records(...)
+    // - AccountController.cs -> SignIn(...)
     public async Task<List<Patient>> GetAllPatientsAsync()
     {
         return await _patientRepository.GetAllPatientsAsync();
     }
 
+    // Dipanggil dari:
+    // - PatientController.cs -> Dashboard(...), Biodata(...), Records(...)
+    // - AdminController.cs -> PatientDetail(...)
+    // - DoctorController.cs -> AddMedicalRecord(...), PatientDetail(...)
     public async Task<Patient?> GetPatientByIdWithRelationsAsync(int patientId)
     {
         return await _patientRepository.GetByIdWithRelationsAsync(patientId);
     }
 }
+
+

@@ -33,3 +33,4 @@ public class MedicalRecord
     public virtual Doctor? Doctor { get; set; }
 }
 
+

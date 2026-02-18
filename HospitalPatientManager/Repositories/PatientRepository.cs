@@ -9,12 +9,10 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
     public PatientRepository(HospitalDbContext context) : base(context)
     {
     }
-
     public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber)
     {
         return await _dbSet.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
     }
-
     public async Task<Patient?> GetByIdWithRelationsAsync(int patientId)
     {
         return await _dbSet
@@ -23,7 +21,6 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
                 .ThenInclude(m => m.Doctor)
             .FirstOrDefaultAsync(p => p.Id == patientId);
     }
-
     public async Task<List<Patient>> GetPatientHistoryByFullNameAsync(string fullName)
     {
         string normalizedName = fullName.Trim().ToLower();
@@ -36,7 +33,6 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
             .OrderBy(p => p.FullName)
             .ToListAsync();
     }
-
     public async Task<List<Patient>> GetAllPatientsAsync()
     {
         return await _dbSet
@@ -46,3 +42,4 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
             .ToListAsync();
     }
 }
+

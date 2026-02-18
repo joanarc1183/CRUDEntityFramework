@@ -12,3 +12,4 @@ public interface IPatientService
     Task<List<Patient>> GetAllPatientsAsync();
     Task<Patient?> GetPatientByIdWithRelationsAsync(int patientId);
 }
+

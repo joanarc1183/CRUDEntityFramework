@@ -18,7 +18,6 @@ public class HomeController : Controller
         _doctorService = doctorService;
         _signUpValidator = signUpValidator;
     }
-
     public async Task<IActionResult> Index()
     {
         var allPatients = await _patientService.GetAllPatientsAsync();
@@ -85,3 +84,4 @@ public class HomeController : Controller
     }
 
 }
+

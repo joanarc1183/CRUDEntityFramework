@@ -8,3 +8,4 @@ public interface IDoctorRepository : IRepository<Doctor>
     Task<Doctor?> GetByIdReadOnlyAsync(int id);
     Task<Doctor?> GetByFullNameAsync(string fullName);
 }
+

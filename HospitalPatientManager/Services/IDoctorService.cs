@@ -9,3 +9,4 @@ public interface IDoctorService
     Task<Doctor?> GetDoctorByIdAsync(int doctorId);
     Task<ServiceResult<Doctor>> CreateDoctorAsync(DoctorCreateDto dto);
 }
+

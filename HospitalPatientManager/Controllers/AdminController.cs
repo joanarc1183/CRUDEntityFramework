@@ -21,12 +21,10 @@ public class AdminController : Controller
         _patientService = patientService;
         _medicalRecordService = medicalRecordService;
     }
-
     public IActionResult Index()
     {
         return RedirectToAction(nameof(Dashboard));
     }
-
     public async Task<IActionResult> Dashboard()
     {
         var patients = await _patientService.GetAllPatientsAsync();
@@ -42,7 +40,6 @@ public class AdminController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> Patients(string? searchTerm)
     {
         var patients = await _patientService.GetAllPatientsAsync();
@@ -79,7 +76,6 @@ public class AdminController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> Doctors(string? searchTerm)
     {
         var doctors = await _doctorService.GetAllDoctorsAsync();
@@ -111,7 +107,6 @@ public class AdminController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> PatientDetail(int patientId)
     {
         Patient? patient = await _patientService.GetPatientByIdWithRelationsAsync(patientId);
@@ -150,7 +145,6 @@ public class AdminController : Controller
         TempData[result.Success ? "FlashSuccess" : "FlashError"] = result.Message;
         return RedirectToAction(nameof(Records));
     }
-
     public async Task<IActionResult> Records(string? searchTerm)
     {
         var records = await _medicalRecordService.GetAllRecordAsync();
@@ -177,7 +171,6 @@ public class AdminController : Controller
 
         return View(model);
     }
-
     private static RecordItemViewModel ToRecordItem(MedicalRecord record)
     {
         return new RecordItemViewModel
@@ -193,7 +186,6 @@ public class AdminController : Controller
             Treatment = record.Treatment
         };
     }
-
     private static string GetInitials(string fullName)
     {
         var tokens = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -209,7 +201,6 @@ public class AdminController : Controller
 
         return string.Concat(tokens[0][0], tokens[^1][0]).ToUpperInvariant();
     }
-
     private static int GetAge(DateOnly dateOfBirth)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
@@ -222,3 +213,4 @@ public class AdminController : Controller
         return age;
     }
 }
+

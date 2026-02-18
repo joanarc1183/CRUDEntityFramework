@@ -14,7 +14,6 @@ public class PatientController : Controller
     {
         _patientService = patientService;
     }
-
     public async Task<IActionResult> Dashboard(int? userId)
     {
         if (userId is null)
@@ -51,7 +50,6 @@ public class PatientController : Controller
 
         return View(model);
     }
-
     public async Task<IActionResult> Biodata(int? userId)
     {
         if (userId is null)
@@ -83,7 +81,6 @@ public class PatientController : Controller
         TempData[result.Success ? "FlashSuccess" : "FlashError"] = result.Message;
         return RedirectToAction(nameof(Biodata), new { userId = dto.Id });
     }
-
     public async Task<IActionResult> Records(int? userId, string? searchTerm)
     {
         if (userId is null)
@@ -132,7 +129,6 @@ public class PatientController : Controller
         var result = await _patientService.GetPatientHistoryByFullNameDtoAsync(fullName);
         return Json(result);
     }
-
     private static RecordItemViewModel ToRecordItem(MedicalRecord record)
     {
         return new RecordItemViewModel
@@ -148,7 +144,6 @@ public class PatientController : Controller
             Treatment = record.Treatment
         };
     }
-
     private static string GetInitials(string fullName)
     {
         var tokens = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -164,7 +159,6 @@ public class PatientController : Controller
 
         return string.Concat(tokens[0][0], tokens[^1][0]).ToUpperInvariant();
     }
-
     private static int GetAge(DateOnly dateOfBirth)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
@@ -177,3 +171,4 @@ public class PatientController : Controller
         return age;
     }
 }
+

@@ -13,3 +13,4 @@ public class UpdateDiagnosisDtoValidator : AbstractValidator<UpdateDiagnosisDto>
             .MaximumLength(500);
     }
 }
+

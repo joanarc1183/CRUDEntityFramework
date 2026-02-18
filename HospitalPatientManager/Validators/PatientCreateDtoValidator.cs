@@ -44,3 +44,4 @@ public class PatientCreateDtoValidator : AbstractValidator<PatientCreateDto>
             .WithMessage("Phone number is already registered.");
     }
 }
+

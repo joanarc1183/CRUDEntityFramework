@@ -197,7 +197,6 @@ public class AccountController : Controller
 
         return user;
     }
-
     private static string GeneratePasswordFromFullName(string fullName)
     {
         string normalized = Regex.Replace(fullName.Trim(), "\\s+", string.Empty).ToLowerInvariant();
@@ -214,3 +213,4 @@ public class AccountController : Controller
         return $"{normalized}a1";
     }
 }
+

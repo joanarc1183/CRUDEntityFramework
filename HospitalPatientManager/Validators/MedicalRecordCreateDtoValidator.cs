@@ -54,3 +54,4 @@ public class MedicalRecordCreateDtoValidator : AbstractValidator<MedicalRecordCr
             .WithMessage("Status must be Completed or Pending.");
     }
 }
+
