@@ -16,6 +16,7 @@ public class PatientService : IPatientService
         _mapper = mapper;
     }
 
+    // From PatientController
     public async Task<ServiceResult<PatientReadDto>> CreatePatientAsync(PatientCreateDto dto)
     {
         Patient? existing = await _patientRepository.GetByPhoneNumberAsync(dto.PhoneNumber.Trim());

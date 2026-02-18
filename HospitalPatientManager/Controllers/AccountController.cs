@@ -69,11 +69,19 @@ public class AccountController : Controller
             string.Equals(p.FullName, normalizedName, StringComparison.OrdinalIgnoreCase));
         if (patient is not null)
         {
-            string expectedPatientPassword = BuildPasswordFromName(patient.FullName);
-            if (string.Equals(normalizedPassword, expectedPatientPassword, StringComparison.OrdinalIgnoreCase))
+            string generatedPassword = GeneratePasswordFromFullName(patient.FullName);
+            var appUser = await EnsureDomainUserAsync(
+                $"patient-{patient.Id}",
+                patient.FullName,
+                "Patient",
+                generatedPassword);
+            var patientSignIn = await _signInManager.PasswordSignInAsync(
+                appUser.UserName!,
+                normalizedPassword,
+                isPersistent: false,
+                lockoutOnFailure: false);
+            if (patientSignIn.Succeeded)
             {
-                var appUser = await EnsureDomainUserAsync($"patient-{patient.Id}", patient.FullName, "Patient");
-                await _signInManager.SignInAsync(appUser, isPersistent: false);
                 return RedirectToAction("Dashboard", "Patient", new { userId = patient.Id });
             }
         }
@@ -83,11 +91,19 @@ public class AccountController : Controller
             string.Equals(d.FullName, normalizedName, StringComparison.OrdinalIgnoreCase));
         if (doctor is not null)
         {
-            string expectedDoctorPassword = BuildPasswordFromDoctorName(doctor.FullName);
-            if (string.Equals(normalizedPassword, expectedDoctorPassword, StringComparison.OrdinalIgnoreCase))
+            string generatedPassword = GeneratePasswordFromFullName(doctor.FullName);
+            var appUser = await EnsureDomainUserAsync(
+                $"doctor-{doctor.Id}",
+                doctor.FullName,
+                "Doctor",
+                generatedPassword);
+            var doctorSignIn = await _signInManager.PasswordSignInAsync(
+                appUser.UserName!,
+                normalizedPassword,
+                isPersistent: false,
+                lockoutOnFailure: false);
+            if (doctorSignIn.Succeeded)
             {
-                var appUser = await EnsureDomainUserAsync($"doctor-{doctor.Id}", doctor.FullName, "Doctor");
-                await _signInManager.SignInAsync(appUser, isPersistent: false);
                 return RedirectToAction("Dashboard", "Doctor", new { userId = doctor.Id });
             }
         }
@@ -117,7 +133,11 @@ public class AccountController : Controller
         return View();
     }
 
-    private async Task<ApplicationUser> EnsureDomainUserAsync(string userName, string displayName, string role)
+    private async Task<ApplicationUser> EnsureDomainUserAsync(
+        string userName,
+        string displayName,
+        string role,
+        string generatedPassword)
     {
         var user = await _userManager.FindByNameAsync(userName);
         if (user is null)
@@ -129,7 +149,7 @@ public class AccountController : Controller
                 EmailConfirmed = true
             };
 
-            var createResult = await _userManager.CreateAsync(user, BuildDomainPassword(displayName));
+            var createResult = await _userManager.CreateAsync(user, generatedPassword);
             if (!createResult.Succeeded)
             {
                 string errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
@@ -140,6 +160,23 @@ public class AccountController : Controller
         {
             user.DisplayName = displayName;
             await _userManager.UpdateAsync(user);
+        }
+
+        if (!await _userManager.CheckPasswordAsync(user, generatedPassword))
+        {
+            var removeResult = await _userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+            {
+                string errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to reset password for '{displayName}': {errors}");
+            }
+
+            var addResult = await _userManager.AddPasswordAsync(user, generatedPassword);
+            if (!addResult.Succeeded)
+            {
+                string errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to set password for '{displayName}': {errors}");
+            }
         }
 
         if (!await _roleManager.RoleExistsAsync(role))
@@ -155,19 +192,19 @@ public class AccountController : Controller
         return user;
     }
 
-    private static string BuildDomainPassword(string fullName)
+    private static string GeneratePasswordFromFullName(string fullName)
     {
-        return $"{Regex.Replace(fullName, "\\s+", string.Empty)}A1";
-    }
+        string normalized = Regex.Replace(fullName.Trim(), "\\s+", string.Empty).ToLowerInvariant();
+        if (string.IsNullOrEmpty(normalized))
+        {
+            normalized = "user";
+        }
 
-    private static string BuildPasswordFromName(string fullName)
-    {
-        return Regex.Replace(fullName, "\\s+", string.Empty).Trim();
-    }
+        if (normalized.Length < 4)
+        {
+            normalized = normalized.PadRight(4, 'x');
+        }
 
-    private static string BuildPasswordFromDoctorName(string fullName)
-    {
-        string withoutTitle = Regex.Replace(fullName.Trim(), "^(dr\\.?\\s+)", string.Empty, RegexOptions.IgnoreCase);
-        return Regex.Replace(withoutTitle, "\\s+", string.Empty);
+        return $"{normalized}a1";
     }
 }

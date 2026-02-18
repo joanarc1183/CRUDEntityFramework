@@ -49,9 +49,11 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // After press button "Sign Up Patient" in index.cshtml
     public async Task<IActionResult> CreatePatient(PatientCreateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.FullName) ||
+            string.IsNullOrWhiteSpace(dto.DateOfBirth.ToString()) ||
             string.IsNullOrWhiteSpace(dto.Gender) ||
             string.IsNullOrWhiteSpace(dto.Address) ||
             string.IsNullOrWhiteSpace(dto.PhoneNumber))
@@ -60,7 +62,9 @@ public class HomeController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        // Call patient service to create new patient
         var result = await _patientService.CreatePatientAsync(dto);
+
         if (!result.Success)
         {
             TempData["FlashError"] = result.Message;
